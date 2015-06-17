@@ -1,0 +1,27 @@
+{
+  "name": "aptracker",
+  "version": "1.0.0",
+  "description": "a worktime tracker with special fields for adesso aproda time tracking",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "time",
+    "tracker",
+    "aproda",
+    "adesso"
+  ],
+  "author": "Christoph Hoffmann",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^1.0.0",
+    "commander": "^2.8.1",
+    "moment": "^2.10.3",
+    "nedb": "^1.1.2"
+  },
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "mocha": "^2.2.5"
+  }
+}
