@@ -1,5 +1,5 @@
 {
-  "name": "aptracker",
+  "name": "aptrac",
   "version": "1.0.0",
   "description": "a worktime tracker with special fields for adesso aproda time tracking",
   "main": "index.js",
@@ -15,10 +15,12 @@
   "author": "Christoph Hoffmann",
   "license": "MIT",
   "dependencies": {
+    "async": "^1.2.1",
     "chalk": "^1.0.0",
     "commander": "^2.8.1",
     "moment": "^2.10.3",
-    "nedb": "^1.1.2"
+    "nedb": "^1.1.2",
+    "osenv": "^0.1.2"
   },
   "devDependencies": {
     "chai": "^3.0.0",
