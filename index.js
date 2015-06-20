@@ -9,6 +9,7 @@ var findCurrent = require('./lib/actions/findCurrent');
 var moment = require('moment');
 var a = require('./lib/util/arguments');
 var async = require('async');
+var deserialize = require('./lib/util/deserialize');
 
 function parseTime(dateTime) {
     return moment(dateTime, 'HH:mm');
@@ -16,6 +17,13 @@ function parseTime(dateTime) {
 
 function parseDate(dateString) {
     return moment(dateString, 'DD.MM.YY');
+}
+
+function outputTaskToConsole(obj){
+    if(obj.end)
+        console.log("task: %s, start: %s, end: %s, dur: %s", obj.task ||'', obj.start.format('DD.MM.YY HH:mm'), obj.end.format('DD.MM.YY HH:mm'), moment(obj.end.diff(obj.start)).format('HH:mm'));
+    else
+        console.log("task: %s, start: %s, dur: %s", obj.task ||'', obj.start.format('DD.MM.YY HH:mm'), moment(moment().diff(obj.start)).format('HH:mm'));
 }
 
 program
@@ -104,7 +112,7 @@ program
                 a.bind(this, options),
                 function (args, done) {
                     var db = args.db;
-                    db.find({end: {$exists: true}})
+                    db.find({start: {$exists: true}, end: {$exists: true}})
                         .sort({start: -1})
                         .limit(1).
                         exec(function (err, tasks) {
@@ -125,9 +133,9 @@ program
                 create,
                 //todo set edit options from rerunned task
                 function (args, done) {
-                    args.blub.task = args.rerun.task;
-                    args.blub.project = args.rerun.project;
-                    args.blub.note = args.rerun.note;
+                    args.changes.task = args.rerun.task;
+                    args.changes.project = args.rerun.project;
+                    args.changes.note = args.rerun.note;
                     done(null, args)
                 },
                 edit
@@ -142,11 +150,14 @@ program
 program
     .command('list')
     .alias('l')
+    .option('-d --day', 'show all entries of a day')
+    .option('-w --week', 'show all entries of a week')
+    .option('-m --month', 'show all entries of a month')
     .action(function (options) {
         "use strict";
 
         var db = init(options);
-        db.find({})
+        db.find({start: {$exists: true}})
             .sort({start: 1})
             .exec(function (err, objs) {
                 if (err) {
@@ -154,17 +165,25 @@ program
                     return;
                 }
                 objs.forEach(function (obj) {
+                    deserialize(obj);
                     outputTaskToConsole(obj)
                 })
             });
     });
+program
+    .command('now')
+    .alias('n')
+    .action(function (options) {
+        "use strict";
 
-function outputTaskToConsole(obj){
-    if(obj.end)
-        console.log("task: %s, start: %s, end: %s", obj.task, moment(obj.start).format('DD.MM.YY HH:mm'), moment(obj.end).format('DD.MM.YY HH:mm'));
-    else
-        console.log("task: %s, start: %s", obj.task, moment(obj.start).format('DD.MM.YY HH:mm'));
-
-}
+        async.waterfall([
+            a.bind(this, options),
+            findCurrent
+        ], function (err, args) {
+            if (err) console.log(err);
+            else
+                outputTaskToConsole(args.task);
+        });
+    });
 
 program.parse(process.argv);
