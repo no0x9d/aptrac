@@ -6,10 +6,13 @@ var edit = require('./lib/actions/edit');
 var end = require('./lib/actions/end');
 var create = require('./lib/actions/create');
 var findCurrent = require('./lib/actions/findCurrent');
+var findLast = require('./lib/actions/findLast');
 var moment = require('moment');
 var a = require('./lib/util/arguments');
 var async = require('async');
 var deserialize = require('./lib/util/deserialize');
+var _ = require('lodash');
+var chalk = require('chalk');
 
 function parseTime(dateTime) {
     return moment(dateTime, 'HH:mm');
@@ -19,11 +22,30 @@ function parseDate(dateString) {
     return moment(dateString, 'DD.MM.YY');
 }
 
-function outputTaskToConsole(obj){
-    if(obj.end)
-        console.log("task: %s, start: %s, end: %s, dur: %s", obj.task ||'', obj.start.format('DD.MM.YY HH:mm'), obj.end.format('DD.MM.YY HH:mm'), moment(obj.end.diff(obj.start)).format('HH:mm'));
-    else
-        console.log("task: %s, start: %s, dur: %s", obj.task ||'', obj.start.format('DD.MM.YY HH:mm'), moment(moment().diff(obj.start)).format('HH:mm'));
+function outputTaskToConsole(task) {
+    console.log("%s - %s  %s  %s",
+        task.start.format('HH:mm'),
+        task.end ? task.end.format('HH:mm') : '     ',
+        moment(task.duration).format('HH:mm'),
+        task.task || '');
+}
+
+function outputHeader(day) {
+    console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
+    console.log(chalk.yellow('Start   End    Dur    Task'));
+}
+function outputDays(groupedByDay) {
+    for (var day in groupedByDay) {
+        var duration = 0;
+        outputHeader(day);
+        var tasks = groupedByDay[day];
+        tasks.forEach(function (task) {
+            duration += task.duration;
+
+            outputTaskToConsole(task)
+        });
+        console.log("               %s", moment(duration).format("HH:mm"))
+    }
 }
 
 program
@@ -110,34 +132,17 @@ program
     .action(function (options) {
         async.waterfall([
                 a.bind(this, options),
-                function (args, done) {
-                    var db = args.db;
-                    db.find({start: {$exists: true}, end: {$exists: true}})
-                        .sort({start: -1})
-                        .limit(1).
-                        exec(function (err, tasks) {
-                            if(err) return done(err);
-                            if (tasks.length !== 1)
-                                return done("did not found task to return to");
-
-                            var task = tasks[0];
-                            //todo set start to parameter
-                            task.start = moment(task.start);
-                            delete task.end;
-                            args.rerun = task;
-                            done(null, args);
-                        })
-                },
-                findCurrent,
-                end,
-                create,
-                //todo set edit options from rerunned task
+                findLast,
+                // update changes from found task
                 function (args, done) {
                     args.changes.task = args.rerun.task;
                     args.changes.project = args.rerun.project;
                     args.changes.note = args.rerun.note;
                     done(null, args)
                 },
+                findCurrent,
+                end,
+                create,
                 edit
             ], function (err, args) {
                 if (err) console.log(err);
@@ -153,21 +158,30 @@ program
     .option('-d --day', 'show all entries of a day')
     .option('-w --week', 'show all entries of a week')
     .option('-m --month', 'show all entries of a month')
+    .option('-a --all', 'show all entries')
     .action(function (options) {
         "use strict";
 
         var db = init(options);
         db.find({start: {$exists: true}})
             .sort({start: 1})
-            .exec(function (err, objs) {
+            .exec(function (err, tasks) {
                 if (err) {
                     console.log("could not load tasks");
                     return;
                 }
-                objs.forEach(function (obj) {
-                    deserialize(obj);
-                    outputTaskToConsole(obj)
-                })
+
+                tasks.forEach(function (task) {
+                    deserialize(task);
+
+                    //outputTaskToConsole(task)
+                });
+                var groupedByDay = _.groupBy(tasks, function (task) {
+                    var day = task.start.clone();
+                    return day.startOf('day');
+                });
+
+                outputDays(groupedByDay);
             });
     });
 program
