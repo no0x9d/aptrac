@@ -41,7 +41,7 @@ program
         ], function (err, args) {
             if (err) console.log(err);
             else
-                console.log(args.task);
+                outputTaskToConsole(args.task);
         });
     });
 
@@ -64,7 +64,7 @@ program
         ], function (err, args) {
             if (err) console.log(err);
             else
-                console.log(args.task);
+                outputTaskToConsole(args.task);
         });
     });
 
@@ -89,7 +89,7 @@ program
         ], function (err, args) {
             if (err) console.log(err);
             else
-                console.log(args.task);
+                outputTaskToConsole(args.task);
         });
     });
 
@@ -97,6 +97,8 @@ program
     .command('return')
     .alias('r')
     .description('returns to the previous active task')
+    .option("-t, --time <time>", "sets the start time (default: now)", parseTime, moment())
+    .option("-d, --date <date>", "sets the start date (default: today)", parseDate, moment())
     .action(function (options) {
         async.waterfall([
                 a.bind(this, options),
@@ -106,27 +108,33 @@ program
                         .sort({start: -1})
                         .limit(1).
                         exec(function (err, tasks) {
+                            if(err) return done(err);
                             if (tasks.length !== 1)
                                 return done("did not found task to return to");
 
                             var task = tasks[0];
+                            //todo set start to parameter
+                            task.start = moment(task.start);
+                            delete task.end;
                             args.rerun = task;
-                            done(null, task);
+                            done(null, args);
                         })
                 },
                 findCurrent,
                 end,
                 create,
                 //todo set edit options from rerunned task
-                function (args, done){
-                    args.blub = args.rerun;
+                function (args, done) {
+                    args.blub.task = args.rerun.task;
+                    args.blub.project = args.rerun.project;
+                    args.blub.note = args.rerun.note;
                     done(null, args)
                 },
                 edit
-            ], function (err, task) {
+            ], function (err, args) {
                 if (err) console.log(err);
                 else
-                    console.log(task);
+                    outputTaskToConsole(args.task);
             }
         )
     });
@@ -138,15 +146,25 @@ program
         "use strict";
 
         var db = init(options);
-        db.find({}, function (err, objs) {
-            if (err) {
-                console.log("could not load tasks");
-                return;
-            }
-            objs.forEach(function (obj) {
-                console.log(obj);
-            })
-        });
+        db.find({})
+            .sort({start: 1})
+            .exec(function (err, objs) {
+                if (err) {
+                    console.log("could not load tasks");
+                    return;
+                }
+                objs.forEach(function (obj) {
+                    outputTaskToConsole(obj)
+                })
+            });
     });
+
+function outputTaskToConsole(obj){
+    if(obj.end)
+        console.log("task: %s, start: %s, end: %s", obj.task, moment(obj.start).format('DD.MM.YY HH:mm'), moment(obj.end).format('DD.MM.YY HH:mm'));
+    else
+        console.log("task: %s, start: %s", obj.task, moment(obj.start).format('DD.MM.YY HH:mm'));
+
+}
 
 program.parse(process.argv);
