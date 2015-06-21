@@ -21,7 +21,8 @@
     "lodash": "^3.9.3",
     "moment": "^2.10.3",
     "nedb": "^1.1.2",
-    "osenv": "^0.1.2"
+    "osenv": "^0.1.2",
+    "sugar": "^1.4.1"
   },
   "devDependencies": {
     "chai": "^3.0.0",

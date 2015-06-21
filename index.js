@@ -13,9 +13,19 @@ var async = require('async');
 var deserialize = require('./lib/util/deserialize');
 var _ = require('lodash');
 var chalk = require('chalk');
+require('sugar');
 
 function parseTime(dateTime) {
-    return moment(dateTime, 'HH:mm');
+    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm'], true);
+    if (!time.isValid()) {
+        var date = Date.create(dateTime);
+        if (!date.isValid()) {
+            console.log("can not parse time");
+            process.exit(1);
+        }
+        time = moment(date);
+    }
+    return time;
 }
 
 function outputTaskToConsole(task) {
