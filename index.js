@@ -18,10 +18,6 @@ function parseTime(dateTime) {
     return moment(dateTime, 'HH:mm');
 }
 
-function parseDate(dateString) {
-    return moment(dateString, 'DD.MM.YY');
-}
-
 function outputTaskToConsole(task) {
     console.log("%s - %s  %s  %s",
         task.start.format('HH:mm'),
@@ -55,8 +51,7 @@ program
     .command('start [task]')
     .alias('s')
     .description('starts a new task')
-    .option("-t, --time <time>", "sets the start time (default: now)", parseTime, moment())
-    .option("-d, --date <date>", "sets the start date (default: today)", parseDate, moment())
+    .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
     .option("--db <db>", "database connection")
@@ -67,7 +62,8 @@ program
             findCurrent,
             end,
             create,
-            edit
+            edit,
+            findCurrent
         ], function (err, args) {
             if (err) console.log(err);
             else
@@ -79,9 +75,8 @@ program
     .command('edit [task]')
     .alias('ed')
     .description('edits the current active task')
-    .option("-t, --time <time>", "sets the start time (default: now)")
-    .option("-T, --end-time <time>", "sets the end time (default: now)")
-    .option("-d, --date <date>", "sets the date (default: today)")
+    .option("-s, --start <time>", "sets the start time")
+    .option("-e, --end <time>", "sets the end time")
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
     .option("--db <db>", "database connection")
@@ -101,13 +96,12 @@ program
 program
     .command('end [task]')
     .alias('en')
-    .description('set the state of the current active task to end')
-    .option('-r, --return', "start a follow up task with the same settings as the previous one")
-    .option("-t, --time <time>", "sets the start time (default: now)")
-    .option("-d, --date <date>", "sets the start date (default: today)")
-    .option("-n, --note <note>", "personal notes")
-    .option("-p, --project <project>", "project for task")
-    .option("--db <db>", "database connection")
+    .description('ends of the current running task')
+    .option('-s, --start <time>', "sets the start time")
+    .option('-e, --end <time>', "sets the end time (default: now)")
+    .option('-n, --note <note>', 'personal notes')
+    .option('-p, --project <project>', 'project for task')
+    .option('--db <db>', 'database connection')
     .action(function (task, options) {
         "use strict";
         options.task = task;
@@ -127,8 +121,7 @@ program
     .command('return')
     .alias('r')
     .description('returns to the previous active task')
-    .option("-t, --time <time>", "sets the start time (default: now)", parseTime, moment())
-    .option("-d, --date <date>", "sets the start date (default: today)", parseDate, moment())
+    .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .action(function (options) {
         async.waterfall([
                 a.bind(this, options),
@@ -155,10 +148,13 @@ program
 program
     .command('list')
     .alias('l')
-    .option('-d --day', 'show all entries of a day')
-    .option('-w --week', 'show all entries of a week')
-    .option('-m --month', 'show all entries of a month')
+    .option('-f --from', 'time from which to query (default: today 0:00 am)')
+    .option('-t --to', 'time from which to query (default: today 11:59 pm)')
+    .option('-y --yesterday', 'show all yesterday entries')
+    .option('-w --week', 'show all entries of current week')
+    .option('-m --month', 'show all entries of current month')
     .option('-a --all', 'show all entries')
+    .option('-c --condense', 'condense all entries with the same task into one')
     .action(function (options) {
         "use strict";
 
