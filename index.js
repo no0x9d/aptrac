@@ -11,12 +11,11 @@ var moment = require('moment');
 var a = require('./lib/util/arguments');
 var async = require('async');
 var deserialize = require('./lib/util/deserialize');
-var _ = require('lodash');
 var chalk = require('chalk');
 require('sugar');
 
 function parseTime(dateTime) {
-    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm'], true);
+    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM.YY'], true);
     if (!time.isValid()) {
         var date = Date.create(dateTime);
         if (!date.isValid()) {
@@ -25,6 +24,7 @@ function parseTime(dateTime) {
         }
         time = moment(date);
     }
+    console.log(time.toDate());
     return time;
 }
 
@@ -85,8 +85,8 @@ program
     .command('edit [task]')
     .alias('ed')
     .description('edits the current active task')
-    .option("-s, --start <time>", "sets the start time")
-    .option("-e, --end <time>", "sets the end time")
+    .option("-s, --start <time>", "sets the start time", parseTime)
+    .option("-e, --end <time>", "sets the end time", parseTime)
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
     .option("--db <db>", "database connection")
@@ -95,7 +95,8 @@ program
         async.waterfall([
             a.bind(this, options),
             findCurrent,
-            edit
+            edit,
+            findCurrent
         ], function (err, args) {
             if (err) console.log(err);
             else
@@ -107,8 +108,8 @@ program
     .command('end [task]')
     .alias('en')
     .description('ends of the current running task')
-    .option('-s, --start <time>', "sets the start time")
-    .option('-e, --end <time>', "sets the end time (default: now)")
+    .option('-s, --start <time>', "sets the start time", parseTime)
+    .option('-e, --end <time>', "sets the end time (default: now)", parseTime, moment())
     .option('-n, --note <note>', 'personal notes')
     .option('-p, --project <project>', 'project for task')
     .option('--db <db>', 'database connection')
@@ -158,8 +159,8 @@ program
 program
     .command('list')
     .alias('l')
-    .option('-f --from', 'time from which to query (default: today 0:00 am)')
-    .option('-t --to', 'time from which to query (default: today 11:59 pm)')
+    .option('-f --from', 'time from which to query (default: today 0:00 am)', parseTime, moment().startOf('day'))
+    .option('-t --to', 'time from which to query (default: today 11:59 pm)', parseTime, moment().endOf('day'))
     .option('-y --yesterday', 'show all yesterday entries')
     .option('-w --week', 'show all entries of current week')
     .option('-m --month', 'show all entries of current month')
@@ -168,25 +169,47 @@ program
     .action(function (options) {
         "use strict";
 
+        // handle option flags and set 'from' & 'to'
+        if (options.yesterday) {
+            options.from = moment().subtract(1, 'day').startOf('day');
+            options.to = moment().subtract(1, 'day').endOf('day');
+        }
+        if (options.week) {
+            options.from = moment().startOf('week');
+            options.to = moment().endOf('day');
+        }
+        if (options.month) {
+            options.from = moment().startOf('month');
+            options.to = moment().endOf('day');
+        }
+
+        // build query
+        var query;
+        if (options.all) {
+            query = {start: {$exists: true}};
+        } else {
+            query = {$and: [{start: {$gt: options.from.toDate()}}, {start: {$lt: options.to.toDate()}}]}
+        }
+
         var db = init(options);
-        db.find({start: {$exists: true}})
+        db.find(query)
             .sort({start: 1})
             .exec(function (err, tasks) {
                 if (err) {
                     console.log("could not load tasks");
+                    console.log(err);
                     return;
                 }
 
                 tasks.forEach(function (task) {
                     deserialize(task);
-
-                    //outputTaskToConsole(task)
                 });
-                var groupedByDay = _.groupBy(tasks, function (task) {
+                var groupedByDay = tasks.groupBy(function (task) {
                     var day = task.start.clone();
                     return day.startOf('day');
                 });
 
+                // output
                 outputDays(groupedByDay);
             });
     });
@@ -201,7 +224,7 @@ program
             findCurrent
         ], function (err, args) {
             if (err) console.log(err);
-            else
+            else if (args.task)
                 outputTaskToConsole(args.task);
         });
     });
