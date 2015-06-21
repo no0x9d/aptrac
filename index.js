@@ -15,7 +15,7 @@ var chalk = require('chalk');
 require('sugar');
 
 function parseTime(dateTime) {
-    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM.YY'], true);
+    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY'], true);
     if (!time.isValid()) {
         var date = Date.create(dateTime);
         if (!date.isValid()) {
@@ -24,7 +24,6 @@ function parseTime(dateTime) {
         }
         time = moment(date);
     }
-    console.log(time.toDate());
     return time;
 }
 
@@ -159,8 +158,8 @@ program
 program
     .command('list')
     .alias('l')
-    .option('-f --from', 'time from which to query (default: today 0:00 am)', parseTime, moment().startOf('day'))
-    .option('-t --to', 'time from which to query (default: today 11:59 pm)', parseTime, moment().endOf('day'))
+    .option('-f --from <time>', 'time from which to query (default: today 0:00 am)', parseTime, moment().startOf('day'))
+    .option('-t --to <time>', 'time from which to query (default: today 11:59 pm)', parseTime, moment().endOf('day'))
     .option('-y --yesterday', 'show all yesterday entries')
     .option('-w --week', 'show all entries of current week')
     .option('-m --month', 'show all entries of current month')
@@ -176,11 +175,11 @@ program
         }
         if (options.week) {
             options.from = moment().startOf('week');
-            options.to = moment().endOf('day');
+            options.to = moment().endOf('week');
         }
         if (options.month) {
             options.from = moment().startOf('month');
-            options.to = moment().endOf('day');
+            options.to = moment().endOf('month');
         }
 
         // build query
