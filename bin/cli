@@ -87,7 +87,7 @@ function outputDays(groupedByDay, options) {
 }
 
 program
-    .version('1.0.0');
+    .version('0.1.0');
 
 program
     .command('start [task]')
@@ -116,7 +116,7 @@ program
 program
     .command('edit [task]')
     .alias('ed')
-    .description('edits the current active task')
+    .description('edits the current running task')
     .option("-s, --start <time>", "sets the start time", parseTime)
     .option("-e, --end <time>", "sets the end time", parseTime)
     .option("-n, --note <note>", "personal notes")
@@ -194,9 +194,10 @@ program
 program
     .command('list')
     .alias('l')
+    .description("displays a set of tasks (default: today's tasks)")
     .option('-f --from <time>', 'time from which to query (default: today 0:00 am)', parseTime, moment().startOf('day'))
     .option('-t --to <time>', 'time from which to query (default: today 11:59 pm)', parseTime, moment().endOf('day'))
-    .option('-y --yesterday', 'show all yesterday entries')
+    .option('-y --yesterday', "show yesterday's entries")
     .option('-w --week', 'show all entries of current week')
     .option('-m --month', 'show all entries of current month')
     .option('-a --all', 'show all entries')
@@ -253,6 +254,7 @@ program
 program
     .command('now')
     .alias('n')
+    .description('displays the current running task')
     .action(function (options) {
         "use strict";
 
