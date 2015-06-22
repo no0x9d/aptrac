@@ -35,7 +35,7 @@ function outputTaskToConsole(task) {
     console.log("%s - %s  %s  %s",
         task.start.format('HH:mm'),
         task.end ? task.end.format('HH:mm') : '     ',
-        task.duration.format('hh:mm', { trim: false }),
+        task.duration.format('hh:mm', {trim: false}),
         task.task || '');
 }
 
@@ -125,7 +125,8 @@ program
             findCurrent,
             edit,
             findCurrent,
-            end
+            end,
+            findLast
         ], function (err, args) {
             if (err) console.log(err);
             else
@@ -144,15 +145,16 @@ program
                 findLast,
                 // update changes from found task
                 function (args, done) {
-                    args.changes.task = args.rerun.task;
-                    args.changes.project = args.rerun.project;
-                    args.changes.note = args.rerun.note;
+                    args.changes.task = args.task.task;
+                    args.changes.project = args.project;
+                    args.changes.note = args.note;
                     done(null, args)
                 },
                 findCurrent,
                 end,
                 create,
-                edit
+                edit,
+                findCurrent
             ], function (err, args) {
                 if (err) console.log(err);
                 else
