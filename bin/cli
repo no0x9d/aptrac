@@ -35,7 +35,7 @@ function outputTaskToConsole(task) {
     console.log("%s - %s  %s  %s",
         task.start.format('HH:mm'),
         task.end ? task.end.format('HH:mm') : '     ',
-        moment.duration(task.duration).format('hh:mm', { trim: false }),
+        task.duration.format('hh:mm', { trim: false }),
         task.task || '');
 }
 
@@ -45,16 +45,16 @@ function outputHeader(day) {
 }
 function outputDays(groupedByDay) {
     for (var day in groupedByDay) {
-        var duration = 0;
+        var duration = moment.duration(0);
         outputHeader(day);
         var tasks = groupedByDay[day];
         tasks.forEach(function (task) {
-            duration += task.duration;
+            duration.add(task.duration);
 
             outputTaskToConsole(task)
         });
-        var rest = moment.duration(duration).subtract(moment.duration(config.workHoursPerDay, 'hours'));
-        console.log("               %s", moment.duration(duration).format("HH:mm", {trim: false}), chalk.red(rest.format("HH:mm", {trim: false})))
+        var rest = duration.subtract(moment.duration(config.workHoursPerDay, 'hours'));
+        console.log("               %s", duration.format("HH:mm", {trim: false}), chalk.red(rest.format("HH:mm", {trim: false})))
     }
 }
 
