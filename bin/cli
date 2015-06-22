@@ -44,18 +44,45 @@ function outputHeader(day) {
     console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
     console.log(chalk.yellow('Start   End    Dur[h] Task'));
 }
-function outputDays(groupedByDay) {
+function outputDays(groupedByDay, options) {
     for (var day in groupedByDay) {
         var duration = moment.duration(0);
-        outputHeader(day);
         var tasks = groupedByDay[day];
-        tasks.forEach(function (task) {
-            duration.add(task.duration);
 
-            outputTaskToConsole(task)
-        });
-        var rest = duration.clone().subtract(moment.duration(config.workHoursPerDay, 'hours'));
-        console.log("               %s", duration.format("HH:mm", {trim: false}), chalk.red(rest.format("HH:mm", {trim: false})))
+        if (options && options.condense) {
+            console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
+            console.log(chalk.yellow('Dur[h] Task'));
+
+            var groupedbyTask = tasks.groupBy(function (task) {
+                return task.task || '';
+            });
+
+            for (var groupedTask in groupedbyTask) {
+                var condensedDuration = moment.duration(0);
+                groupedbyTask[groupedTask].forEach(function (task) {
+                    condensedDuration.add(task.duration);
+                    duration.add(task.duration);
+                });
+                console.log("%s  %s",
+                    condensedDuration.format('hh:mm', {trim: false}),
+                    groupedTask);
+            }
+            console.log('--------------------------');
+            var rest = duration.clone().subtract(moment.duration(config.workHoursPerDay, 'hours'));
+            var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
+            console.log(duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
+        }
+        else {
+            outputHeader(day);
+            tasks.forEach(function (task) {
+                duration.add(task.duration);
+                outputTaskToConsole(task)
+            });
+            var rest = duration.clone().subtract(moment.duration(config.workHoursPerDay, 'hours'))
+            var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
+            console.log('               -------------');
+            console.log("               %s", duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
+        }
     }
 }
 
@@ -220,7 +247,7 @@ program
                 });
 
                 // output
-                outputDays(groupedByDay);
+                outputDays(groupedByDay, options);
             });
     });
 program
