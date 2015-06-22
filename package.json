@@ -2,9 +2,13 @@
   "name": "aptrac",
   "version": "1.0.0",
   "description": "a worktime tracker with special fields for adesso aproda time tracking",
-  "main": "index.js",
+  "main": "./bin/cli",
   "scripts": {
-    "test": "test"
+    "test": "mocha"
+  },
+  "bin": {
+    "aptrac" : "./bin/cli",
+    "a" : "./bin/cli"
   },
   "keywords": [
     "time",
