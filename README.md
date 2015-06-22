@@ -14,7 +14,7 @@ npm install -g
 ## how to use it
 
 Installing aptrac adds the application as `aptrac` and `a` to your path.
-For detailed usage consult the application help with `aptrac -h` or `aptrac [command] -h
+For detailed usage consult the application help with `aptrac -h` or `aptrac [command] -h`
 
 ## working with time
 
