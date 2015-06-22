@@ -16,6 +16,7 @@ var create      = require('./../lib/actions/create'),
     chalk       = require('chalk'),
     moment      = require('moment');
 require('sugar');
+require('moment-duration-format');
 
 function parseTime(dateTime) {
     var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY'], true);
@@ -34,13 +35,13 @@ function outputTaskToConsole(task) {
     console.log("%s - %s  %s  %s",
         task.start.format('HH:mm'),
         task.end ? task.end.format('HH:mm') : '     ',
-        moment(task.duration).format('HH:mm'),
+        moment.duration(task.duration).format('hh:mm', { trim: false }),
         task.task || '');
 }
 
 function outputHeader(day) {
     console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
-    console.log(chalk.yellow('Start   End    Dur    Task'));
+    console.log(chalk.yellow('Start   End    Dur[h] Task'));
 }
 function outputDays(groupedByDay) {
     for (var day in groupedByDay) {
@@ -53,7 +54,7 @@ function outputDays(groupedByDay) {
             outputTaskToConsole(task)
         });
         var rest = moment.duration(duration).subtract(moment.duration(config.workHoursPerDay, 'hours'));
-        console.log("               %s", moment(duration).format("HH:mm"), chalk.red(rest.asHours()))
+        console.log("               %s", moment.duration(duration).format("HH:mm", {trim: false}), chalk.red(rest.format("HH:mm", {trim: false})))
     }
 }
 
