@@ -17,6 +17,7 @@ var create      = require('./../lib/actions/create'),
     moment      = require('moment');
 require('sugar');
 require('moment-duration-format');
+require('../lib/util/moment-duration-clone');
 
 function parseTime(dateTime) {
     var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY'], true);
@@ -53,7 +54,7 @@ function outputDays(groupedByDay) {
 
             outputTaskToConsole(task)
         });
-        var rest = duration.subtract(moment.duration(config.workHoursPerDay, 'hours'));
+        var rest = duration.clone().subtract(moment.duration(config.workHoursPerDay, 'hours'));
         console.log("               %s", duration.format("HH:mm", {trim: false}), chalk.red(rest.format("HH:mm", {trim: false})))
     }
 }
