@@ -1,17 +1,18 @@
 "use strict";
 
-var program = require('commander');
-var init = require('./lib/util/init-db');
-var edit = require('./lib/actions/edit');
-var end = require('./lib/actions/end');
-var create = require('./lib/actions/create');
-var findCurrent = require('./lib/actions/findCurrent');
-var findLast = require('./lib/actions/findLast');
-var moment = require('moment');
-var a = require('./lib/util/arguments');
-var async = require('async');
-var deserialize = require('./lib/util/deserialize');
-var chalk = require('chalk');
+var create      = require('./lib/actions/create'),
+    edit        = require('./lib/actions/edit'),
+    end         = require('./lib/actions/end'),
+    findCurrent = require('./lib/actions/findCurrent'),
+    findLast    = require('./lib/actions/findLast'),
+    args        = require('./lib/util/arguments'),
+    deserialize = require('./lib/util/deserialize'),
+    init        = require('./lib/util/init-db'),
+    config      = require('./lib/config'),
+    async       = require('async'),
+    program     = require('commander'),
+    chalk       = require('chalk'),
+    moment      = require('moment');
 require('sugar');
 
 function parseTime(dateTime) {
@@ -67,7 +68,7 @@ program
     .action(function (task, options) {
         options.task = task;
         async.waterfall([
-            a.bind(this, options),
+            args.bind(this, options),
             findCurrent,
             end,
             create,
@@ -92,7 +93,7 @@ program
     .action(function (task, options) {
         options.task = task;
         async.waterfall([
-            a.bind(this, options),
+            args.bind(this, options),
             findCurrent,
             edit,
             findCurrent
@@ -116,9 +117,10 @@ program
         "use strict";
         options.task = task;
         async.waterfall([
-            a.bind(this, options),
+            args.bind(this, options),
             findCurrent,
             edit,
+            findCurrent,
             end
         ], function (err, args) {
             if (err) console.log(err);
@@ -134,7 +136,7 @@ program
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .action(function (options) {
         async.waterfall([
-                a.bind(this, options),
+                args.bind(this, options),
                 findLast,
                 // update changes from found task
                 function (args, done) {
@@ -219,7 +221,7 @@ program
         "use strict";
 
         async.waterfall([
-            a.bind(this, options),
+            args.bind(this, options),
             findCurrent
         ], function (err, args) {
             if (err) console.log(err);
