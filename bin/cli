@@ -19,11 +19,11 @@ require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
 
-function handleAliases(options){
+function handleAliases(options) {
     var aliases = config.get('alias');
 
-    options.options.forEach(function (option){
-        if(option.required !== 0 || option.optional !== 0){
+    options.options.forEach(function (option) {
+        if (option.required !== 0 || option.optional !== 0) {
             var name = option.name();
             var optionValue = options[name];
             if (optionValue) {
@@ -301,7 +301,7 @@ program
 
 function collectKeyValues(val, aliases) {
     var keyvalue = val.split("=");
-    aliases[keyvalue[0]]= keyvalue[1];
+    aliases[keyvalue[0]] = keyvalue[1];
     return aliases;
 }
 
@@ -322,8 +322,8 @@ program
             "use strict";
 
             args = args || default_args;
-            args.forEach(function(option){
-                if(options[option])
+            args.forEach(function (option) {
+                if (options[option])
                     copyBase[option] = options[option];
             });
 
@@ -348,8 +348,8 @@ program
             "use strict";
 
             args = args || default_args;
-            args.forEach(function(option){
-                if(options[option])
+            args.forEach(function (option) {
+                if (options[option])
                     copyBase.push(option);
             });
 
