@@ -6,9 +6,9 @@ A javascript work time tracker for your console.
 
 Clone this repository and install it globally.
 
-```
-git clone https://github.com/no0x9d/aptrac.git
-npm install -g
+```sh
+$ git clone https://github.com/no0x9d/aptrac.git
+$ npm install -g
 ```
 
 ## how to use it

@@ -268,4 +268,56 @@ program
         });
     });
 
+program
+    .command('set')
+    .description('sets a config value as default')
+    .option("-n, --note <note>", "personal notes")
+    .option("-t, --task <task>", "personal notes")
+    .option("-p, --project <project>", "project for task")
+    .option("--db <db>", "database connection")
+    .action(function (options) {
+        "use strict";
+        var default_args = ["project", "note", "task", "db"];
+
+        var copyOptions = function (options, copyBase, args) {
+            "use strict";
+
+            args = args || default_args;
+            args.forEach(function(option){
+                if(options[option])
+                    copyBase[option] = options[option];
+            });
+
+            return copyBase;
+        };
+        var setValues = copyOptions(options, {});
+        config.set(setValues);
+    });
+
+program
+    .command('reset')
+    .description('resets a config value to the default (must be called with options)')
+    .option("-n, --note", "personal notes")
+    .option("-t, --task", "personal notes")
+    .option("-p, --project", "project for task")
+    .option("--db", "database connection")
+    .action(function (options) {
+        "use strict";
+        var default_args = ["project", "note", "task", "db"];
+
+        var copyOptions = function (options, copyBase, args) {
+            "use strict";
+
+            args = args || default_args;
+            args.forEach(function(option){
+                if(options[option])
+                    copyBase.push(option);
+            });
+
+            return copyBase;
+        };
+        var setValues = copyOptions(options, []);
+        config.unset(setValues);
+    });
+
 program.parse(process.argv);
