@@ -125,7 +125,7 @@ program
         options.task = task;
         handleAliases(options);
         async.waterfall([
-            args.bind(this, options),
+            args.bind(this, options, true),
             findCurrent,
             end,
             create,
@@ -152,7 +152,7 @@ program
         options.task = task;
         handleAliases(options);
         async.waterfall([
-            args.bind(this, options),
+            args.bind(this, options, false),
             findCurrent,
             edit,
             findCurrent
@@ -178,7 +178,7 @@ program
         options.task = task;
         handleAliases(options);
         async.waterfall([
-            args.bind(this, options),
+            args.bind(this, options, false),
             findCurrent,
             edit,
             findCurrent,
@@ -199,7 +199,7 @@ program
     .action(function (options) {
         handleAliases(options);
         async.waterfall([
-                args.bind(this, options),
+                args.bind(this, false,options),
                 findLast,
                 // update changes from found task
                 function (args, done) {
@@ -290,7 +290,7 @@ program
         "use strict";
 
         async.waterfall([
-            args.bind(this, options),
+            args.bind(this, options, false),
             findCurrent
         ], function (err, args) {
             if (err) console.log(err);
