@@ -19,6 +19,22 @@ require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
 
+function handleAliases(options){
+    var aliases = config.get('alias');
+
+    options.options.forEach(function (option){
+        if(option.required !== 0 || option.optional !== 0){
+            var name = option.name();
+            if(options[name]) {
+                var alias = aliases[options[name]];
+                if(alias){
+                    options[name] = alias;
+                }
+            }
+        }
+    })
+}
+
 function parseTime(dateTime) {
     var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY'], true);
     if (!time.isValid()) {
@@ -68,7 +84,7 @@ function outputDays(groupedByDay, options) {
                     groupedTask);
             }
             console.log('--------------------------');
-            var rest = duration.clone().subtract(moment.duration(config.workHoursPerDay, 'hours'));
+            var rest = duration.clone().subtract(moment.duration(config.get('workHoursPerDay'), 'hours'));
             var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
             console.log(duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
         }
@@ -78,7 +94,7 @@ function outputDays(groupedByDay, options) {
                 duration.add(task.duration);
                 outputTaskToConsole(task)
             });
-            var rest = duration.clone().subtract(moment.duration(config.workHoursPerDay, 'hours'))
+            var rest = duration.clone().subtract(moment.duration(config.get('workHoursPerDay'), 'hours'))
             var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
             console.log('               -------------');
             console.log("               %s", duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
@@ -95,10 +111,12 @@ program
     .description('starts a new task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .option("-n, --note <note>", "personal notes")
+    .option("-t, --task <task>", "task description")
     .option("-p, --project <project>", "project for task")
     .option("--db <db>", "database connection")
     .action(function (task, options) {
         options.task = task;
+        handleAliases(options);
         async.waterfall([
             args.bind(this, options),
             findCurrent,
@@ -119,11 +137,13 @@ program
     .description('edits the current running task')
     .option("-s, --start <time>", "sets the start time", parseTime)
     .option("-e, --end <time>", "sets the end time", parseTime)
+    .option("-t, --task <task>", "task description")
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
     .option("--db <db>", "database connection")
     .action(function (task, options) {
         options.task = task;
+        handleAliases(options);
         async.waterfall([
             args.bind(this, options),
             findCurrent,
@@ -142,12 +162,14 @@ program
     .description('ends of the current running task')
     .option('-s, --start <time>', "sets the start time", parseTime)
     .option('-e, --end <time>', "sets the end time (default: now)", parseTime, moment())
+    .option("-t, --task <task>", "task description")
     .option('-n, --note <note>', 'personal notes')
     .option('-p, --project <project>', 'project for task')
     .option('--db <db>', 'database connection')
     .action(function (task, options) {
         "use strict";
         options.task = task;
+        handleAliases(options);
         async.waterfall([
             args.bind(this, options),
             findCurrent,
@@ -168,6 +190,7 @@ program
     .description('returns to the previous active task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .action(function (options) {
+        handleAliases(options);
         async.waterfall([
                 args.bind(this, options),
                 findLast,
@@ -204,6 +227,7 @@ program
     .option('-c --condense', 'condense all entries with the same task into one')
     .action(function (options) {
         "use strict";
+        handleAliases(options);
 
         // handle option flags and set 'from' & 'to'
         if (options.yesterday) {
@@ -268,16 +292,24 @@ program
         });
     });
 
+function collectKeyValues(val, aliases) {
+    var keyvalue = val.split("=");
+    aliases[keyvalue[0]]= keyvalue[1];
+    return aliases;
+}
+
 program
     .command('set')
     .description('sets a config value as default')
     .option("-n, --note <note>", "personal notes")
-    .option("-t, --task <task>", "personal notes")
+    .option("-t, --task <task>", "task description")
     .option("-p, --project <project>", "project for task")
     .option("--db <db>", "database connection")
+    .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .action(function (options) {
         "use strict";
-        var default_args = ["project", "note", "task", "db"];
+
+        var default_args = ["project", "note", "task", "db", "alias"];
 
         var copyOptions = function (options, copyBase, args) {
             "use strict";
@@ -298,7 +330,7 @@ program
     .command('reset')
     .description('resets a config value to the default (must be called with options)')
     .option("-n, --note", "personal notes")
-    .option("-t, --task", "personal notes")
+    .option("-t, --task", "task description")
     .option("-p, --project", "project for task")
     .option("--db", "database connection")
     .action(function (options) {
