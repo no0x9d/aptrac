@@ -334,13 +334,24 @@ function logConfigToConsole(config){
     console.log(output);
 }
 
+function makeDBPathAbsolute(pathToDB) {
+    if(pathToDB.startsWith("~home")){
+        pathToDB = path.join(config.get('home'), pathToDB.slice(5))
+    }
+    else if(pathToDB.startsWith("~"))
+    {
+        pathToDB = path.join(config.get('userhome'), pathToDB.slice(1))
+    }
+    return path.resolve(pathToDB);
+}
+
 program
     .command('set')
     .description('sets a config value as default')
     .option("-n, --note <note>", "personal notes")
     .option("-t, --task <task>", "task description")
     .option("-p, --project <project>", "project for task")
-    .option("--db <db>", "database connection")
+    .option("--db <db>", "database connection", makeDBPathAbsolute)
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .option("-c, --config <config>", "name of configuration file", "config")
     .action(function (options) {
