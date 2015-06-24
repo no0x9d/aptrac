@@ -25,6 +25,7 @@
     "chalk": "^1.0.0",
     "columnify": "^1.5.1",
     "commander": "^2.8.1",
+    "if-async": "^3.7.4",
     "jsonfile": "^2.1.2",
     "moment": "^2.10.3",
     "moment-duration-format": "^1.3.0",

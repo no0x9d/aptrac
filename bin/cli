@@ -5,6 +5,7 @@
 var create      = require('./../lib/actions/create'),
     edit        = require('./../lib/actions/edit'),
     end         = require('./../lib/actions/end'),
+    findById    = require('./../lib/actions/findById'),
     findCurrent = require('./../lib/actions/findCurrent'),
     findLast    = require('./../lib/actions/findLast'),
     args        = require('./../lib/util/arguments'),
@@ -16,7 +17,8 @@ var create      = require('./../lib/actions/create'),
     program     = require('commander'),
     chalk       = require('chalk'),
     moment      = require('moment'),
-    path        = require('path');
+    path        = require('path'),
+    ifAsync     = require('if-async');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
@@ -150,7 +152,7 @@ function outputDays(groupedByDay, options) {
 
 function doneOutput(err, args) {
     if (err) console.log(chalk.red(err));
-    else if(args.task)
+    else if (args.task)
         outputTaskToConsole(args.task);
 }
 
@@ -189,16 +191,25 @@ program
     .option("-t, --task <task>", "task description")
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
+    .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .action(function (task, options) {
         preHandleOptions(options, task);
         handleAliases(options);
+        function findTaskWithIdOrCurrent() {
+            return ifAsync(function (args, cb) {
+                cb(Object.isNaN(options.id) ? "malformated id" : null, options.id)
+            })
+                .then(findById)
+                .else(findCurrent);
+        }
+
         async.waterfall([
             args.bind(this, options, false),
-            findCurrent,
+            findTaskWithIdOrCurrent(),
             edit,
-            findCurrent
+            findTaskWithIdOrCurrent()
         ], doneOutput);
     });
 
@@ -237,21 +248,21 @@ program
         preHandleOptions(options);
         handleAliases(options);
         async.waterfall([
-                args.bind(this, false, options),
-                findLast,
-                // update changes from found task
-                function (args, done) {
-                    args.changes.task = args.task.task;
-                    args.changes.project = args.project;
-                    args.changes.note = args.note;
-                    done(null, args)
-                },
-                findCurrent,
-                end,
-                create,
-                edit,
-                findCurrent
-            ], doneOutput)
+            args.bind(this, false, options),
+            findLast,
+            // update changes from found task
+            function (args, done) {
+                args.changes.task = args.task.task;
+                args.changes.project = args.project;
+                args.changes.note = args.note;
+                done(null, args)
+            },
+            findCurrent,
+            end,
+            create,
+            edit,
+            findCurrent
+        ], doneOutput)
     });
 
 program
@@ -341,7 +352,7 @@ function collectKeyValues(val, aliases) {
     return aliases;
 }
 
-function logConfigToConsole(config) {
+function outputConfigToConsole(config) {
     var output = {};
     config.sources.forEach(function (source) {
         Object.merge(output, source, true);
@@ -388,7 +399,7 @@ program
         };
         var setValues = copyOptions(options, {});
         config.set(setValues);
-        logConfigToConsole(config);
+        outputConfigToConsole(config);
     });
 
 program
@@ -417,7 +428,7 @@ program
         };
         var setValues = copyOptions(options, []);
         config.unset(setValues);
-        logConfigToConsole(config)
+        outputConfigToConsole(config)
     });
 
 program.parse(process.argv);
