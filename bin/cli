@@ -65,8 +65,11 @@ function parseTime(dateTime) {
     return time;
 }
 
+function outputDateHeader(moment) {
+    console.log(chalk.blue(moment.format("dddd, D.MM.YYYY")));
+}
 function outputTaskToConsole(task) {
-    console.log(chalk.blue(task.start.format("dddd, MMMM Do YYYY")));
+    outputDateHeader(task.sttart);
 
     console.log(columnify([{
         id: task._id,
@@ -93,7 +96,7 @@ function outputDays(groupedByDay, options) {
 
         var outputTasks = [];
         console.log();
-        console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
+        outputDateHeader(moment(new Date(day)));
         if (options && options.condense) {
 
             var groupedbyTask = tasks.groupBy(function (task) {
