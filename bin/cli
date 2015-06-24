@@ -239,6 +239,26 @@ program
     });
 
 program
+    .command("kill")
+    .alias("k")
+    .option("-i, --id <id>", "id of task to edit", Number)
+    .option("-c, --config <config>", "name of configuration file", "config")
+    .option('--db <db>', 'database connection')
+    .action(function (options) {
+        if(Object.isNaN(options.id))
+            console.log(chalk.red("malformated id"));
+
+        preHandleOptions(options);
+
+        var db = init(options);
+        db.remove({_id: options.id}, {}, function (err, numRemoved) {
+            if (err) console.log(chalk.red(err))
+            if( numRemoved === 1)
+            console.log("task with #%s removed", options.id)
+        })
+    });
+
+program
     .command('return')
     .alias('r')
     .description('returns to the previous active task')
