@@ -23,6 +23,7 @@
   "dependencies": {
     "async": "^1.2.1",
     "chalk": "^1.0.0",
+    "columnify": "^1.5.1",
     "commander": "^2.8.1",
     "jsonfile": "^2.1.2",
     "moment": "^2.10.3",

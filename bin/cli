@@ -11,6 +11,7 @@ var create      = require('./../lib/actions/create'),
     deserialize = require('./../lib/util/deserialize'),
     init        = require('./../lib/util/init-db'),
     config      = require('./../lib/config/index'),
+    columnify   = require('columnify'),
     async       = require('async'),
     program     = require('commander'),
     chalk       = require('chalk'),
@@ -65,28 +66,39 @@ function parseTime(dateTime) {
 }
 
 function outputTaskToConsole(task) {
-    console.log("%s - %s  %s  %s",
-        task.start.format('HH:mm'),
-        task.end ? task.end.format('HH:mm') : '     ',
-        task.duration.format('hh:mm', {trim: false}),
-        task.task || '');
+    console.log(chalk.blue(task.start.format("dddd, MMMM Do YYYY")));
+
+    console.log(columnify([{
+        id: task._id,
+        start: task.start.format('HH:mm'),
+        end: task.end ? task.end.format('HH:mm') : '',
+        duration: task.duration.format('hh:mm', {trim: false}),
+        project: task.project,
+        task: task.task,
+        note: task.note
+    }], {
+        columnSplitter: ' | ',
+        config: {
+            duration: {
+                align: 'center'
+            }
+        }
+    }));
 }
 
-function outputHeader(day) {
-    console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
-    console.log(chalk.yellow('Start   End    Dur[h] Task'));
-}
 function outputDays(groupedByDay, options) {
     for (var day in groupedByDay) {
         var duration = moment.duration(0);
         var tasks = groupedByDay[day];
 
+        var outputTasks = [];
+        console.log();
+        console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
         if (options && options.condense) {
-            console.log(chalk.blue(moment(new Date(day)).format("dddd, MMMM Do YYYY")));
-            console.log(chalk.yellow('Dur[h] Task'));
 
             var groupedbyTask = tasks.groupBy(function (task) {
-                return task.task || '';
+                return task.task || ''
+                    + task.project || '';
             });
 
             for (var groupedTask in groupedbyTask) {
@@ -95,26 +107,41 @@ function outputDays(groupedByDay, options) {
                     condensedDuration.add(task.duration);
                     duration.add(task.duration);
                 });
-                console.log("%s  %s",
-                    condensedDuration.format('hh:mm', {trim: false}),
-                    groupedTask);
+                var groupedTaskRepresentant = groupedbyTask[groupedTask][0];
+                outputTasks.push({
+                    duration: condensedDuration.format('hh:mm', {trim: false}),
+                    project: groupedTaskRepresentant.project,
+                    task: groupedTaskRepresentant.task,
+                    note: groupedTaskRepresentant.note
+                });
             }
-            console.log('--------------------------');
-            var rest = duration.clone().subtract(moment.duration(config.get('workHoursPerDay'), 'hours'));
-            var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
-            console.log(duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
         }
         else {
-            outputHeader(day);
             tasks.forEach(function (task) {
                 duration.add(task.duration);
-                outputTaskToConsole(task)
+                outputTasks.push({
+                    id: task._id,
+                    start: task.start.format('HH:mm'),
+                    end: task.end ? task.end.format('HH:mm') : '',
+                    duration: task.duration.format('hh:mm', {trim: false}),
+                    project: task.project,
+                    task: task.task,
+                    note: task.note
+                });
             });
-            var rest = duration.clone().subtract(moment.duration(config.get('workHoursPerDay'), 'hours'))
-            var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
-            console.log('               -------------');
-            console.log("               %s", duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
         }
+        console.log(columnify(outputTasks, {
+            columnSplitter: ' | ',
+            config: {
+                duration: {
+                    align: 'center'
+                }
+            }
+        }));
+        var rest = duration.clone().subtract(moment.duration(config.get('workHoursPerDay'), 'hours'));
+        var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
+        console.log('---------------------------');
+        console.log("duration [h]: %s (%s)", duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
     }
 }
 
@@ -316,7 +343,7 @@ program
         ], function (err, args) {
             if (err) console.log(err);
             else if (args.task)
-                outputTaskToConsole(args.task);
+            outputTaskToConsole(args.task);
         });
     });
 
@@ -326,7 +353,7 @@ function collectKeyValues(val, aliases) {
     return aliases;
 }
 
-function logConfigToConsole(config){
+function logConfigToConsole(config) {
     var output = {};
     config.sources.forEach(function (source) {
         Object.merge(output, source, true);
@@ -335,11 +362,10 @@ function logConfigToConsole(config){
 }
 
 function makeDBPathAbsolute(pathToDB) {
-    if(pathToDB.startsWith("~home")){
+    if (pathToDB.startsWith("~home")) {
         pathToDB = path.join(config.get('home'), pathToDB.slice(5))
     }
-    else if(pathToDB.startsWith("~"))
-    {
+    else if (pathToDB.startsWith("~")) {
         pathToDB = path.join(config.get('userhome'), pathToDB.slice(1))
     }
     return path.resolve(pathToDB);
