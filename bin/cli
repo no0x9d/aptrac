@@ -69,7 +69,7 @@ function outputDateHeader(moment) {
     console.log(chalk.blue(moment.format("dddd, D.MM.YYYY")));
 }
 function outputTaskToConsole(task) {
-    outputDateHeader(task.sttart);
+    outputDateHeader(task.start);
 
     console.log(columnify([{
         id: task._id,
