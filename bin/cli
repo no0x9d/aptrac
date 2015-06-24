@@ -100,8 +100,8 @@ function outputDays(groupedByDay, options) {
         if (options && options.condense) {
 
             var groupedbyTask = tasks.groupBy(function (task) {
-                return task.task || ''
-                    + task.project || '';
+                return (task.task || '')
+                    + (task.project || '');
             });
 
             for (var groupedTask in groupedbyTask) {
