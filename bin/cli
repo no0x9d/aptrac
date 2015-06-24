@@ -14,10 +14,19 @@ var create      = require('./../lib/actions/create'),
     async       = require('async'),
     program     = require('commander'),
     chalk       = require('chalk'),
-    moment      = require('moment');
+    moment      = require('moment'),
+    path        = require('path');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
+
+function preHandleOptions(options, task) {
+    options.task = task;
+    if (options.config) {
+        var configPath = path.join(config.get('home'), options.config + ".cfg");
+        config.addSource(configPath);
+    }
+}
 
 function handleAliases(options) {
     var aliases = config.get('alias');
@@ -120,9 +129,10 @@ program
     .option("-n, --note <note>", "personal notes")
     .option("-t, --task <task>", "task description")
     .option("-p, --project <project>", "project for task")
+    .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .action(function (task, options) {
-        options.task = task;
+        preHandleOptions(options, task);
         handleAliases(options);
         async.waterfall([
             args.bind(this, options, true),
@@ -147,9 +157,10 @@ program
     .option("-t, --task <task>", "task description")
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
+    .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .action(function (task, options) {
-        options.task = task;
+        preHandleOptions(options, task);
         handleAliases(options);
         async.waterfall([
             args.bind(this, options, false),
@@ -172,10 +183,11 @@ program
     .option("-t, --task <task>", "task description")
     .option('-n, --note <note>', 'personal notes')
     .option('-p, --project <project>', 'project for task')
+    .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
     .action(function (task, options) {
         "use strict";
-        options.task = task;
+        preHandleOptions(options, task);
         handleAliases(options);
         async.waterfall([
             args.bind(this, options, false),
@@ -196,10 +208,12 @@ program
     .alias('r')
     .description('returns to the previous active task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
+    .option("-c, --config <config>", "name of configuration file", "config")
     .action(function (options) {
+        preHandleOptions(options);
         handleAliases(options);
         async.waterfall([
-                args.bind(this, false,options),
+                args.bind(this, false, options),
                 findLast,
                 // update changes from found task
                 function (args, done) {
@@ -231,9 +245,13 @@ program
     .option('-w --week', 'show all entries of current week')
     .option('-m --month', 'show all entries of current month')
     .option('-a --all', 'show all entries')
-    .option('-c --condense', 'condense all entries with the same task into one')
+    .option('-C --condense', 'condense all entries with the same task into one')
+    .option('--db <db>', 'database connection')
+    .option("-c, --config <config>", "name of configuration file", "config")
+    .option('--db <db>', 'database connection')
     .action(function (options) {
         "use strict";
+        preHandleOptions(options);
         handleAliases(options);
 
         // handle option flags and set 'from' & 'to'
@@ -285,9 +303,12 @@ program
 program
     .command('now')
     .alias('n')
+    .option("-c, --config <config>", "name of configuration file", "config")
+    .option("--db <db>", "database connection")
     .description('displays the current running task')
     .action(function (options) {
         "use strict";
+        preHandleOptions(options);
 
         async.waterfall([
             args.bind(this, options, false),
@@ -305,6 +326,14 @@ function collectKeyValues(val, aliases) {
     return aliases;
 }
 
+function logConfigToConsole(config){
+    var output = {};
+    config.sources.forEach(function (source) {
+        Object.merge(output, source, true);
+    });
+    console.log(output);
+}
+
 program
     .command('set')
     .description('sets a config value as default')
@@ -313,8 +342,11 @@ program
     .option("-p, --project <project>", "project for task")
     .option("--db <db>", "database connection")
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
+    .option("-c, --config <config>", "name of configuration file", "config")
     .action(function (options) {
         "use strict";
+
+        preHandleOptions(options);
 
         var default_args = ["project", "note", "task", "db", "alias"];
 
@@ -331,17 +363,20 @@ program
         };
         var setValues = copyOptions(options, {});
         config.set(setValues);
+        logConfigToConsole(config);
     });
 
 program
-    .command('reset')
+    .command('unset')
     .description('resets a config value to the default (must be called with options)')
     .option("-n, --note", "personal notes")
     .option("-t, --task", "task description")
     .option("-p, --project", "project for task")
     .option("--db", "database connection")
+    .option("-c, --config <config>", "name of configuration file", "config")
     .action(function (options) {
         "use strict";
+        preHandleOptions(options);
         var default_args = ["project", "note", "task", "db"];
 
         var copyOptions = function (options, copyBase, args) {
@@ -357,6 +392,7 @@ program
         };
         var setValues = copyOptions(options, []);
         config.unset(setValues);
+        logConfigToConsole(config)
     });
 
 program.parse(process.argv);
