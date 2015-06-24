@@ -148,6 +148,12 @@ function outputDays(groupedByDay, options) {
     }
 }
 
+function doneOutput(err, args) {
+    if (err) console.log(chalk.red(err));
+    else if(args.task)
+        outputTaskToConsole(args.task);
+}
+
 program
     .version('0.1.0');
 
@@ -171,11 +177,7 @@ program
             create,
             edit,
             findCurrent
-        ], function (err, args) {
-            if (err) console.log(err);
-            else
-                outputTaskToConsole(args.task);
-        });
+        ], doneOutput);
     });
 
 program
@@ -197,11 +199,7 @@ program
             findCurrent,
             edit,
             findCurrent
-        ], function (err, args) {
-            if (err) console.log(err);
-            else
-                outputTaskToConsole(args.task);
-        });
+        ], doneOutput);
     });
 
 program
@@ -226,11 +224,7 @@ program
             findCurrent,
             end,
             findLast
-        ], function (err, args) {
-            if (err) console.log(err);
-            else
-                outputTaskToConsole(args.task);
-        });
+        ], doneOutput);
     });
 
 program
@@ -257,12 +251,7 @@ program
                 create,
                 edit,
                 findCurrent
-            ], function (err, args) {
-                if (err) console.log(err);
-                else
-                    outputTaskToConsole(args.task);
-            }
-        )
+            ], doneOutput)
     });
 
 program
@@ -343,11 +332,7 @@ program
         async.waterfall([
             args.bind(this, options, false),
             findCurrent
-        ], function (err, args) {
-            if (err) console.log(err);
-            else if (args.task)
-            outputTaskToConsole(args.task);
-        });
+        ], doneOutput);
     });
 
 function collectKeyValues(val, aliases) {
