@@ -33,7 +33,9 @@ Installing aptrac adds the application as `aptrac` and `a` to your path.
 For detailed usage consult the application help with `aptrac -h` or `aptrac [command] -h`
 
 ### commands
-> All commands and options can be abbreviated to one or two letters. For more clarity this documentation uses the full versions for both.
+> Nearly all commands and options can be abbreviated to one or two letters. 
+> The only exceptions are the `set` and `unset` commands and the `--db` option.
+> For more clarity this documentation uses the full versions for both commands and options.
 
 * **start (s)** starts a new task
 * **edit (ed)** edits the current running task
@@ -43,7 +45,7 @@ For detailed usage consult the application help with `aptrac -h` or `aptrac [com
 * **now (n)** displays the current running task
 * **kill (k)** deletes a task
 * **set** sets default values to use
-* **unset** resets values to their default values
+* **unset** resets values to their default
 
 ## working with time
 
