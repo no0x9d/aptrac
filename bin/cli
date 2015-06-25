@@ -243,6 +243,7 @@ program
 program
     .command("kill")
     .alias("k")
+    .description("deletes a task with a given id")
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
