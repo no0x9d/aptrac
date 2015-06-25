@@ -6,12 +6,24 @@ Because it's specialized to track what you do at work, the application is opinio
 1. Only one task can be running at any time. When you start a new task, the running task is ended with the starting time of the new task
 2. It's technically possible that a task can span multiple days, but the default output assumes that a task is not longer than 24 hours.
 
+All task entries have this fields
+
+* id *(required)*
+* start *(required)*
+* end
+* project
+* task
+* note
+
+The id is set automatically and only needed for editing or deleting tasks. The start field is required, but always defaults to *now* if not set.
+
 ## how to get it
 
-Clone this repository and install it globally.
+Clone this repository, or download it and install it globally. You need node.js and npm installed to use aptrac.
 
 ```sh
 $ git clone https://github.com/no0x9d/aptrac.git
+$ cd aptrac
 $ npm install -g
 ```
 
@@ -20,12 +32,34 @@ $ npm install -g
 Installing aptrac adds the application as `aptrac` and `a` to your path.
 For detailed usage consult the application help with `aptrac -h` or `aptrac [command] -h`
 
+### commands
+> All commands and options can be abbreviated to one or two letters. For more clarity this documentation uses the full versions for both.
+
+* **start (s)** starts a new task
+* **edit (ed)** edits the current running task
+* **end (en)** ends the current running task
+* **return (r)** starts a new task with the values from the last ended task
+* **list (l)** displays a set of tasks (default: today's tasks)
+* **now (n)** displays the current running task
+* **kill (k)** deletes a task
+* **set** sets default values to use
+* **unset** resets values to their default values
+
 ## working with time
 
 aptrac accepts for all time parameters these formats `HH:mm`, `DD.MM HH:mm`, `DD.MM.YY HH:mm`, `DD.MM`, `DD.MM.YY`.
 
 If none of these formats matches, the date parser of Sugar is used, which allows parsing of natural language time strings like `"5 minutes ago"` or `"monday at 11:30"`.
 For more information read the Sugar API (http://sugarjs.com/dates)
+
+## configuration
+For all not time based options a default value can be set in a configuration file which are used when a new task is started.
+
+You can also set aliases for often used option parameters, which are automatic replaced (see advanced use cases).
+
+aptrac supports multiple configuration file, where you can group a set of default values, so you don't have so set more than one option flag. If a option is set in the configuration and also with an option flag, the value from the option is used.
+
+All config files are in the aptrac home directory and are referenced by name only. To create a new config set the `--config` option on the `aptrac set` command with a new name and the config is created.
 
 ## advanced use case
 
