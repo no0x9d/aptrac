@@ -371,6 +371,7 @@ program
     });
 
 function collectKeyValues(val, aliases) {
+    aliases = aliases || {};
     var keyvalue = val.split("=");
     aliases[keyvalue[0]] = keyvalue[1];
     return aliases;
@@ -394,6 +395,18 @@ function makeDBPathAbsolute(pathToDB) {
     return path.resolve(pathToDB);
 }
 
+var copyOptions = function (options, copyBase, args) {
+    "use strict";
+
+    args = args || [];
+    args.forEach(function (option) {
+        if (options[option])
+            copyBase[option] = options[option];
+    });
+
+    return copyBase;
+};
+
 program
     .command('set')
     .description('sets a config value as default')
@@ -404,27 +417,14 @@ program
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .option("-c, --config <config>", "name of configuration file", "config")
     .action(function (options) {
-        "use strict";
-
-        preHandleOptions(options);
-
-        var default_args = ["project", "note", "task", "db", "alias"];
-
-        var copyOptions = function (options, copyBase, args) {
-            "use strict";
-
-            args = args || default_args;
-            args.forEach(function (option) {
-                if (options[option])
-                    copyBase[option] = options[option];
-            });
-
-            return copyBase;
-        };
-        var setValues = copyOptions(options, {});
-        config.set(setValues);
-        outputConfigToConsole(config);
+        handleSetUnset(options, config.set.bind(config))
     });
+
+function collectValues(val, aliases) {
+    aliases = aliases || [];
+    aliases.push(val);
+    return aliases;
+}
 
 program
     .command('unset')
@@ -433,26 +433,20 @@ program
     .option("-t, --task", "task description")
     .option("-p, --project", "project for task")
     .option("--db", "database connection")
+    .option("-a, --alias <alias>", "database connection", collectValues, [])
     .option("-c, --config <config>", "name of configuration file", "config")
     .action(function (options) {
-        "use strict";
-        preHandleOptions(options);
-        var default_args = ["project", "note", "task", "db"];
-
-        var copyOptions = function (options, copyBase, args) {
-            "use strict";
-
-            args = args || default_args;
-            args.forEach(function (option) {
-                if (options[option])
-                    copyBase.push(option);
-            });
-
-            return copyBase;
-        };
-        var setValues = copyOptions(options, []);
-        config.unset(setValues);
-        outputConfigToConsole(config)
+        handleSetUnset(options, config.unset.bind(config))
     });
+
+function handleSetUnset(options, method){
+    "use strict";
+    preHandleOptions(options);
+    var default_args = ["project", "note", "task", "db", "alias"];
+
+    var values = copyOptions(options, {}, default_args);
+    method(values);
+    outputConfigToConsole(config)
+}
 
 program.parse(process.argv);
