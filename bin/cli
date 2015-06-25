@@ -24,6 +24,10 @@ require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
 
 function preHandleOptions(options, task) {
+    if (!(options instanceof program.Command)){
+        console.log(chalk.red("There was a problem parsing the arguments. Please read the help with aptrac [command] -h"));
+        process.exit(1);
+    }
     if (task)
         options.task = task;
     if (options.config) {
@@ -248,7 +252,8 @@ program
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(function (options) {
+    .action(function () {
+        var options = this;
         if (Object.isNaN(options.id))
             console.log(chalk.red("malformated id"));
 
@@ -268,7 +273,8 @@ program
     .description('returns to the previous active task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(function (options) {
+    .action(function () {
+        var options = this;
         preHandleOptions(options);
         handleAliases(options);
         async.waterfall([
@@ -303,8 +309,9 @@ program
     .option('--db <db>', 'database connection')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(function (options) {
+    .action(function () {
         "use strict";
+        var options = this;
         preHandleOptions(options);
         handleAliases(options);
 
@@ -360,12 +367,12 @@ program
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .description('displays the current running task')
-    .action(function (options) {
+    .action(function () {
         "use strict";
-        preHandleOptions(options);
+        preHandleOptions(this);
 
         async.waterfall([
-            args.bind(this, options, false),
+            args.bind(this, this, false),
             findCurrent
         ], doneOutput);
     });
@@ -416,8 +423,8 @@ program
     .option("--db <db>", "database connection", makeDBPathAbsolute)
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(function (options) {
-        handleSetUnset(options, config.set.bind(config))
+    .action(function () {
+        handleSetUnset(this, config.set.bind(config))
     });
 
 function collectValues(val, aliases) {
@@ -435,8 +442,8 @@ program
     .option("--db", "database connection")
     .option("-a, --alias <alias>", "database connection", collectValues, [])
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(function (options) {
-        handleSetUnset(options, config.unset.bind(config))
+    .action(function () {
+        handleSetUnset(this, config.unset.bind(config))
     });
 
 function handleSetUnset(options, method){
