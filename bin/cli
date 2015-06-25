@@ -34,6 +34,8 @@ function preHandleOptions(options, task) {
 function handleAliases(options) {
     var aliases = config.get('alias');
 
+    if (!aliases) return;
+
     options.options.forEach(function (option) {
         if (option.required !== 0 || option.optional !== 0) {
             var name = option.name();
@@ -245,7 +247,7 @@ program
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
     .action(function (options) {
-        if(Object.isNaN(options.id))
+        if (Object.isNaN(options.id))
             console.log(chalk.red("malformated id"));
 
         preHandleOptions(options);
@@ -253,8 +255,8 @@ program
         var db = init(options);
         db.remove({_id: options.id}, {}, function (err, numRemoved) {
             if (err) console.log(chalk.red(err))
-            if( numRemoved === 1)
-            console.log("task with #%s removed", options.id)
+            if (numRemoved === 1)
+                console.log("task with #%s removed", options.id)
         })
     });
 
