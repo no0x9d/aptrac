@@ -383,7 +383,7 @@ function outputConfigToConsole(config) {
 }
 
 function makeDBPathAbsolute(pathToDB) {
-    if (pathToDB.startsWith("~home")) {
+    if (pathToDB.startsWith("$home")) {
         pathToDB = path.join(config.get('home'), pathToDB.slice(5))
     }
     else if (pathToDB.startsWith("~")) {
