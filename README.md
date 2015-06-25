@@ -1,6 +1,6 @@
 # aptrac
 
-A javascript work time tracker for your console.
+#### A javascript work time tracker for your console.
 Because it's specialized to track what you do at work, the application is opinionated in two ways.
 
 1. Only one task can be running at any time. When you start a new task, the running task is ended with the starting time of the new task
