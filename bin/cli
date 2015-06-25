@@ -24,7 +24,8 @@ require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
 
 function preHandleOptions(options, task) {
-    options.task = task;
+    if (task)
+        options.task = task;
     if (options.config) {
         var configPath = path.join(config.get('home'), options.config + ".cfg");
         config.addSource(configPath);
