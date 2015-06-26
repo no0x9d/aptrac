@@ -4,6 +4,7 @@
 Because it's specialized to track what you do at work, the application is opinionated in two ways.
 
 1. Only one task can be running at any time. When you start a new task, the running task is ended with the starting time of the new task
+For now this limitation is not hard enforced, so that it's possible to have concurrent running tasks by manually editing the start and end times. This may however change!
 2. It's technically possible that a task can span multiple days, but the default output assumes that a task is not longer than 24 hours.
 
 All task entries have this fields
