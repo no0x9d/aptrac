@@ -286,6 +286,7 @@ program
                 args.changes.task = args.task.task;
                 args.changes.project = args.project;
                 args.changes.note = args.note;
+                args.changes.start = options.start;
                 done(null, args)
             },
             findCurrent,
