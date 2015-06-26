@@ -34,6 +34,7 @@ function preHandleOptions(options, task) {
         var configPath = path.join(config.get('home'), options.config + ".cfg");
         config.addSource(configPath);
     }
+    handleAliases(options);
 }
 
 function handleAliases(options) {
@@ -178,7 +179,7 @@ program
     .option("--db <db>", "database connection")
     .action(function (task, options) {
         preHandleOptions(options, task);
-        handleAliases(options);
+
         async.waterfall([
             args.bind(this, options, true),
             findCurrent,
@@ -203,7 +204,7 @@ program
     .option("--db <db>", "database connection")
     .action(function (task, options) {
         preHandleOptions(options, task);
-        handleAliases(options);
+
         function findTaskWithIdOrCurrent() {
             return ifAsync(function (args, cb) {
                 cb(Object.isNaN(options.id) ? "malformated id" : null, options.id)
@@ -234,7 +235,7 @@ program
     .action(function (task, options) {
         "use strict";
         preHandleOptions(options, task);
-        handleAliases(options);
+
         async.waterfall([
             args.bind(this, options, false),
             findCurrent,
@@ -276,7 +277,7 @@ program
     .action(function () {
         var options = this;
         preHandleOptions(options);
-        handleAliases(options);
+
         async.waterfall([
             args.bind(this, false, options),
             findLast,
@@ -313,7 +314,6 @@ program
         "use strict";
         var options = this;
         preHandleOptions(options);
-        handleAliases(options);
 
         // handle option flags and set 'from' & 'to'
         if (options.yesterday) {
