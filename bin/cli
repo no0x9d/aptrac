@@ -2,64 +2,46 @@
 
 "use strict";
 
-var create      = require('./../lib/actions/create'),
-    edit        = require('./../lib/actions/edit'),
-    end         = require('./../lib/actions/end'),
-    findById    = require('./../lib/actions/findById'),
-    findCurrent = require('./../lib/actions/findCurrent'),
-    findLast    = require('./../lib/actions/findLast'),
-    args        = require('./../lib/util/arguments'),
-    deserialize = require('./../lib/util/deserialize'),
-    init        = require('./../lib/util/init-db'),
-    config      = require('./../lib/config/index'),
-    columnify   = require('columnify'),
-    async       = require('async'),
-    program     = require('commander'),
-    chalk       = require('chalk'),
-    moment      = require('moment'),
-    path        = require('path'),
-    ifAsync     = require('if-async');
+var args          = require('./../lib/util/arguments'),
+    config        = require('./../lib/config/index'),
+    startCommand  = require('./../lib/commands/start'),
+    editCommand   = require('./../lib/commands/edit'),
+    endCommand    = require('./../lib/commands/end'),
+    killCommand   = require('./../lib/commands/kill'),
+    returnCommand = require('./../lib/commands/return'),
+    listCommand   = require('./../lib/commands/list'),
+    nowCommand    = require('./../lib/commands/now'),
+    setCommand    = require('./../lib/commands/set'),
+    unsetCommand  = require('./../lib/commands/unset'),
+    program       = require('commander'),
+    moment        = require('moment'),
+    path          = require('path');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
 
-function preHandleOptions(options, task) {
-    if (!(options instanceof program.Command)){
-        console.log(chalk.red("There was a problem parsing the arguments. Please read the help with aptrac [command] -h"));
-        process.exit(1);
-    }
-    if (task)
-        options.task = task;
-    if (options.config) {
-        var configPath = path.join(config.get('home'), options.config + ".cfg");
-        config.addSource(configPath);
-    }
-    handleAliases(options);
+
+function collectKeyValues(val, aliases) {
+    aliases = aliases || {};
+    var keyvalue = val.split("=");
+    aliases[keyvalue[0]] = keyvalue[1];
+    return aliases;
 }
 
-function handleAliases(options) {
-    var aliases = config.get('alias');
+function makeDBPathAbsolute(pathToDB) {
+    if (pathToDB.startsWith("$home")) {
+        pathToDB = path.join(config.get('home'), pathToDB.slice(5))
+    }
+    else if (pathToDB.startsWith("~")) {
+        pathToDB = path.join(config.get('userhome'), pathToDB.slice(1))
+    }
+    return path.resolve(pathToDB);
+}
 
-    if (!aliases) return;
-
-    options.options.forEach(function (option) {
-        if (option.required !== 0 || option.optional !== 0) {
-            var name = option.name();
-            var optionValue = options[name];
-            if (optionValue) {
-                if (Object.isString(optionValue))
-                    if (optionValue.startsWith('\\')) {
-                        options[name] = optionValue.slice(1);
-                    }
-                    else {
-                        var alias = aliases[optionValue];
-                        if (alias) {
-                            options[name] = alias;
-                        }
-                    }
-            }
-        }
-    })
+function collectValues(val, aliases) {
+    aliases = aliases || [];
+    aliases.push(val);
+    return aliases;
 }
 
 function parseTime(dateTime) {
@@ -75,97 +57,8 @@ function parseTime(dateTime) {
     return time;
 }
 
-function outputDateHeader(moment) {
-    console.log(chalk.blue(moment.format("dddd, D.MM.YYYY")));
-}
-function outputTaskToConsole(task) {
-    outputDateHeader(task.start);
-
-    console.log(columnify([{
-        id: task._id,
-        start: task.start.format('HH:mm'),
-        end: task.end ? task.end.format('HH:mm') : '',
-        duration: task.duration.format('hh:mm', {trim: false}),
-        project: task.project,
-        task: task.task,
-        note: task.note
-    }], {
-        columnSplitter: ' | ',
-        config: {
-            duration: {
-                align: 'center'
-            }
-        }
-    }));
-}
-
-function outputDays(groupedByDay, options) {
-    for (var day in groupedByDay) {
-        var duration = moment.duration(0);
-        var tasks = groupedByDay[day];
-
-        var outputTasks = [];
-        console.log();
-        outputDateHeader(moment(new Date(day)));
-        if (options && options.condense) {
-
-            var groupedbyTask = tasks.groupBy(function (task) {
-                return (task.task || '')
-                    + (task.project || '');
-            });
-
-            for (var groupedTask in groupedbyTask) {
-                var condensedDuration = moment.duration(0);
-                groupedbyTask[groupedTask].forEach(function (task) {
-                    condensedDuration.add(task.duration);
-                    duration.add(task.duration);
-                });
-                var groupedTaskRepresentant = groupedbyTask[groupedTask][0];
-                outputTasks.push({
-                    duration: condensedDuration.format('hh:mm', {trim: false}),
-                    project: groupedTaskRepresentant.project,
-                    task: groupedTaskRepresentant.task,
-                    note: groupedTaskRepresentant.note
-                });
-            }
-        }
-        else {
-            tasks.forEach(function (task) {
-                duration.add(task.duration);
-                outputTasks.push({
-                    id: task._id,
-                    start: task.start.format('HH:mm'),
-                    end: task.end ? task.end.format('HH:mm') : '',
-                    duration: task.duration.format('hh:mm', {trim: false}),
-                    project: task.project,
-                    task: task.task,
-                    note: task.note
-                });
-            });
-        }
-        console.log(columnify(outputTasks, {
-            columnSplitter: ' | ',
-            config: {
-                duration: {
-                    align: 'center'
-                }
-            }
-        }));
-        var rest = duration.clone().subtract(moment.duration(config.get('workHoursPerDay'), 'hours'));
-        var restColor = rest.asMilliseconds() < 0 ? chalk.red : chalk.green;
-        console.log('---------------------------');
-        console.log("duration [h]: %s (%s)", duration.format("HH:mm", {trim: false}), restColor(rest.format("HH:mm", {trim: false})))
-    }
-}
-
-function doneOutput(err, args) {
-    if (err) console.log(chalk.red(err));
-    else if (args.task)
-        outputTaskToConsole(args.task);
-}
-
 program
-    .version('0.1.0');
+    .version('0.9.0');
 
 program
     .command('start [task]')
@@ -177,18 +70,7 @@ program
     .option("-p, --project <project>", "project for task")
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
-    .action(function (task, options) {
-        preHandleOptions(options, task);
-
-        async.waterfall([
-            args.bind(this, options, true),
-            findCurrent,
-            end,
-            create,
-            edit,
-            findCurrent
-        ], doneOutput);
-    });
+    .action(startCommand);
 
 program
     .command('edit [task]')
@@ -202,24 +84,7 @@ program
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
-    .action(function (task, options) {
-        preHandleOptions(options, task);
-
-        function findTaskWithIdOrCurrent() {
-            return ifAsync(function (args, cb) {
-                cb(Object.isNaN(options.id) ? "malformated id" : null, options.id)
-            })
-                .then(findById)
-                .else(findCurrent);
-        }
-
-        async.waterfall([
-            args.bind(this, options, false),
-            findTaskWithIdOrCurrent(),
-            edit,
-            findTaskWithIdOrCurrent()
-        ], doneOutput);
-    });
+    .action(editCommand);
 
 program
     .command('end [task]')
@@ -232,19 +97,7 @@ program
     .option('-p, --project <project>', 'project for task')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(function (task, options) {
-        "use strict";
-        preHandleOptions(options, task);
-
-        async.waterfall([
-            args.bind(this, options, false),
-            findCurrent,
-            edit,
-            findCurrent,
-            end,
-            findLast
-        ], doneOutput);
-    });
+    .action(endCommand);
 
 program
     .command("kill")
@@ -253,20 +106,7 @@ program
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(function () {
-        var options = this;
-        if (Object.isNaN(options.id))
-            console.log(chalk.red("malformated id"));
-
-        preHandleOptions(options);
-
-        var db = init(options);
-        db.remove({_id: options.id}, {}, function (err, numRemoved) {
-            if (err) console.log(chalk.red(err))
-            if (numRemoved === 1)
-                console.log("task with #%s removed", options.id)
-        })
-    });
+    .action(killCommand);
 
 program
     .command('return')
@@ -274,28 +114,7 @@ program
     .description('returns to the previous active task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(function () {
-        var options = this;
-        preHandleOptions(options);
-
-        async.waterfall([
-            args.bind(this, false, options),
-            findLast,
-            // update changes from found task
-            function (args, done) {
-                args.changes.task = args.task.task;
-                args.changes.project = args.project;
-                args.changes.note = args.note;
-                args.changes.start = options.start;
-                done(null, args)
-            },
-            findCurrent,
-            end,
-            create,
-            edit,
-            findCurrent
-        ], doneOutput)
-    });
+    .action(returnCommand);
 
 program
     .command('list')
@@ -311,109 +130,15 @@ program
     .option('--db <db>', 'database connection')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(function () {
-        "use strict";
-        var options = this;
-        preHandleOptions(options);
+    .action(listCommand);
 
-        // handle option flags and set 'from' & 'to'
-        if (options.yesterday) {
-            options.from = moment().subtract(1, 'day').startOf('day');
-            options.to = moment().subtract(1, 'day').endOf('day');
-        }
-        if (options.week) {
-            options.from = moment().startOf('week');
-            options.to = moment().endOf('week');
-        }
-        if (options.month) {
-            options.from = moment().startOf('month');
-            options.to = moment().endOf('month');
-        }
-
-        // build query
-        var query;
-        if (options.all) {
-            query = {start: {$exists: true}};
-        } else {
-            query = {$and: [{start: {$gt: options.from.toDate()}}, {start: {$lt: options.to.toDate()}}]}
-        }
-
-        var db = init(options);
-        db.find(query)
-            .sort({start: 1})
-            .exec(function (err, tasks) {
-                if (err) {
-                    console.log("could not load tasks");
-                    console.log(err);
-                    return;
-                }
-
-                tasks.forEach(function (task) {
-                    deserialize(task);
-                });
-
-
-                var groupedByDay = tasks.groupBy(function (task) {
-                    var day = task.start.clone();
-                    return day.startOf('day');
-                });
-
-                // output
-                outputDays(groupedByDay, options);
-            });
-    });
 program
     .command('now')
     .alias('n')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .description('displays the current running task')
-    .action(function () {
-        "use strict";
-        preHandleOptions(this);
-
-        async.waterfall([
-            args.bind(this, this, false),
-            findCurrent
-        ], doneOutput);
-    });
-
-function collectKeyValues(val, aliases) {
-    aliases = aliases || {};
-    var keyvalue = val.split("=");
-    aliases[keyvalue[0]] = keyvalue[1];
-    return aliases;
-}
-
-function outputConfigToConsole(config) {
-    var output = {};
-    config.sources.forEach(function (source) {
-        Object.merge(output, source, true);
-    });
-    console.log(output);
-}
-
-function makeDBPathAbsolute(pathToDB) {
-    if (pathToDB.startsWith("$home")) {
-        pathToDB = path.join(config.get('home'), pathToDB.slice(5))
-    }
-    else if (pathToDB.startsWith("~")) {
-        pathToDB = path.join(config.get('userhome'), pathToDB.slice(1))
-    }
-    return path.resolve(pathToDB);
-}
-
-var copyOptions = function (options, copyBase, args) {
-    "use strict";
-
-    args = args || [];
-    args.forEach(function (option) {
-        if (options[option])
-            copyBase[option] = options[option];
-    });
-
-    return copyBase;
-};
+    .action(nowCommand);
 
 program
     .command('set')
@@ -424,15 +149,7 @@ program
     .option("--db <db>", "database connection", makeDBPathAbsolute)
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(function () {
-        handleSetUnset(this, config.set.bind(config))
-    });
-
-function collectValues(val, aliases) {
-    aliases = aliases || [];
-    aliases.push(val);
-    return aliases;
-}
+    .action(setCommand);
 
 program
     .command('unset')
@@ -443,18 +160,6 @@ program
     .option("--db", "database connection")
     .option("-a, --alias <alias>", "database connection", collectValues, [])
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(function () {
-        handleSetUnset(this, config.unset.bind(config))
-    });
-
-function handleSetUnset(options, method){
-    "use strict";
-    preHandleOptions(options);
-    var default_args = ["project", "note", "task", "db", "alias"];
-
-    var values = copyOptions(options, {}, default_args);
-    method(values);
-    outputConfigToConsole(config)
-}
+    .action(unsetCommand);
 
 program.parse(process.argv);
