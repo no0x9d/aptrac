@@ -4,22 +4,13 @@
 
 var args          = require('./../lib/util/arguments'),
     config        = require('./../lib/config/index'),
-    startCommand  = require('./../lib/commands/start'),
-    editCommand   = require('./../lib/commands/edit'),
-    endCommand    = require('./../lib/commands/end'),
-    killCommand   = require('./../lib/commands/kill'),
-    returnCommand = require('./../lib/commands/return'),
-    listCommand   = require('./../lib/commands/list'),
-    nowCommand    = require('./../lib/commands/now'),
-    setCommand    = require('./../lib/commands/set'),
-    unsetCommand  = require('./../lib/commands/unset'),
     program       = require('commander'),
     moment        = require('moment'),
-    path          = require('path');
+    path          = require('path'),
+    aptrac        = require('./../lib/aptrac');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
-
 
 function collectKeyValues(val, aliases) {
     aliases = aliases || {};
@@ -70,7 +61,7 @@ program
     .option("-p, --project <project>", "project for task")
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
-    .action(startCommand);
+    .action(aptrac.start);
 
 program
     .command('edit [task]')
@@ -84,7 +75,7 @@ program
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
-    .action(editCommand);
+    .action(aptrac.edit);
 
 program
     .command('end [task]')
@@ -97,7 +88,7 @@ program
     .option('-p, --project <project>', 'project for task')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(endCommand);
+    .action(aptrac.end);
 
 program
     .command("kill")
@@ -106,7 +97,7 @@ program
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(killCommand);
+    .action(aptrac.kill);
 
 program
     .command('return')
@@ -114,7 +105,7 @@ program
     .description('returns to the previous active task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(returnCommand);
+    .action(aptrac.return);
 
 program
     .command('list')
@@ -130,7 +121,7 @@ program
     .option('--db <db>', 'database connection')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(listCommand);
+    .action(aptrac.list);
 
 program
     .command('now')
@@ -138,7 +129,7 @@ program
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .description('displays the current running task')
-    .action(nowCommand);
+    .action(aptrac.now);
 
 program
     .command('set')
@@ -150,7 +141,7 @@ program
     .option("--db <db>", "database connection", makeDBPathAbsolute)
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(setCommand);
+    .action(aptrac.set);
 
 program
     .command('unset')
@@ -162,6 +153,6 @@ program
     .option("--db", "database connection")
     .option("-a, --alias <alias>", "database connection", collectValues, [])
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(unsetCommand);
+    .action(aptrac.unset);
 
 program.parse(process.argv);
