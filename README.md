@@ -58,11 +58,43 @@ For more information read the Sugar API (http://sugarjs.com/dates)
 ## configuration
 For all not time based options a default value can be set in a configuration file which are used when a new task is started.
 
-You can also set aliases for often used option parameters, which are automatic replaced (see advanced use cases).
-
 aptrac supports multiple configuration file, where you can group a set of default values, so you don't have so set more than one option flag. If a option is set in the configuration and also with an option flag, the value from the option is used.
 
 All config files are in the aptrac home directory and are referenced by name only. To create a new config set the `--config` option on the `aptrac set` command with a new name and the config is created.
+
+### Aliases
+> Note that only String based options can be replaced by aliases. No default values for Date and Number are supported for now.
+
+You can set aliases for often used option parameters, which are automatic replaced (see also advanced use cases).
+
+```sh
+$ aptrac set --alias t=Test
+```
+Now it can be used in every option field that requires a string.
+```
+$ aptrac start t
+Thursday, 25.06.2015
+ID | START | END   | DURATION | PROJECT | TASK  | NOTE
+1  | 09:29 |       |  00:00   |         | Test  |
+```
+
+If you want to use a string as option parameter which is set as an alias, you have to escape the option with a leading backslash (\\).
+
+```
+$ aptrac start \t
+Thursday, 25.06.2015
+ID | START | END   | DURATION | PROJECT | TASK  | NOTE
+1  | 09:29 |       |  00:00   |         | t     |
+```
+
+To use a alias inside a longer option string, put it in curly braces ({}). Ti input a text with a pair of curly braces inside escape the opening brace with a backslash (\\).
+
+```
+$ aptrac start "an longer {t}"
+Thursday, 25.06.2015
+ID | START | END   | DURATION | PROJECT | TASK           | NOTE
+1  | 09:29 |       |  00:00   |         | an longer Test |
+```
 
 ## advanced use case
 
