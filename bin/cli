@@ -12,6 +12,24 @@ require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
 
+function handle(task){
+    var options = this;
+    if (!(options instanceof program.Command)) {
+        console.log("There was a problem parsing the arguments. Please read the help with aptrac [command] -h");
+        process.exit(1);
+    }
+    if (task && Object.isString(task))
+        options.task = task;
+
+    var fn = aptrac[options._name];
+
+    if(fn && Object.isFunction(fn) )
+        fn.call(aptrac, options);
+    else{
+        console.log('could not find command with name "%s" on the aptrac api', options._name)
+    }
+}
+
 function collectKeyValues(val, aliases) {
     aliases = aliases || {};
     var keyvalue = val.split("=");
@@ -61,7 +79,7 @@ program
     .option("-p, --project <project>", "project for task")
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
-    .action(aptrac.start);
+    .action(handle);
 
 program
     .command('edit [task]')
@@ -75,7 +93,7 @@ program
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
-    .action(aptrac.edit);
+    .action(handle);
 
 program
     .command('end [task]')
@@ -88,7 +106,7 @@ program
     .option('-p, --project <project>', 'project for task')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(aptrac.end);
+    .action(handle);
 
 program
     .command("kill")
@@ -97,7 +115,7 @@ program
     .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(aptrac.kill);
+    .action(handle);
 
 program
     .command('return')
@@ -105,7 +123,7 @@ program
     .description('returns to the previous active task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(aptrac.return);
+    .action(handle);
 
 program
     .command('list')
@@ -121,7 +139,7 @@ program
     .option('--db <db>', 'database connection')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
-    .action(aptrac.list);
+    .action(handle);
 
 program
     .command('now')
@@ -129,7 +147,7 @@ program
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .description('displays the current running task')
-    .action(aptrac.now);
+    .action(handle);
 
 program
     .command('set')
@@ -141,7 +159,7 @@ program
     .option("--db <db>", "database connection", makeDBPathAbsolute)
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(aptrac.set);
+    .action(handle);
 
 program
     .command('unset')
@@ -153,6 +171,6 @@ program
     .option("--db", "database connection")
     .option("-a, --alias <alias>", "database connection", collectValues, [])
     .option("-c, --config <config>", "name of configuration file", "config")
-    .action(aptrac.unset);
+    .action(handle);
 
 program.parse(process.argv);
