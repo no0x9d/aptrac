@@ -136,6 +136,7 @@ program
     .option('-m --month', 'show all entries of current month')
     .option('-a --all', 'show all entries')
     .option('-C --condense', 'condense all entries with the same task into one')
+    .option('-H --hide-empty', 'hide empty columns')
     .option('--db <db>', 'database connection')
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
