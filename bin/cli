@@ -124,6 +124,7 @@ program
     .alias('r')
     .description('returns to the previous active task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
+    .option("-i, --id <id>", "id of task to edit", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .action(handle);
 
