@@ -20,12 +20,14 @@ function handle(task){
     }
     if (task && Object.isString(task))
         options.task = task;
+    else if (task && Object.isArray(task))
+        options.task = task.join(' ');
 
     var fn = aptrac[options._name];
 
-    if(fn && Object.isFunction(fn) )
+    if (fn && Object.isFunction(fn))
         fn.call(aptrac, options);
-    else{
+    else {
         console.log('could not find command with name "%s" on the aptrac api', options._name)
     }
 }
@@ -70,7 +72,7 @@ program
     .version('0.9.0');
 
 program
-    .command('start [task]')
+    .command('start [task...]')
     .alias('s')
     .description('starts a new task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
@@ -82,7 +84,7 @@ program
     .action(handle);
 
 program
-    .command('edit [task]')
+    .command('edit [task...]')
     .alias('ed')
     .description('edits the current running task')
     .option("-s, --start <time>", "sets the start time", parseTime)
@@ -96,7 +98,7 @@ program
     .action(handle);
 
 program
-    .command('end [task]')
+    .command('end [task...]')
     .alias('en')
     .description('ends of the current running task')
     .option('-s, --start <time>', "sets the start time", parseTime)
