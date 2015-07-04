@@ -119,7 +119,7 @@ program
     .command("kill")
     .alias("k")
     .description("deletes a task with a given id")
-    .option("-i, --id <id>", "id of task to edit", Number)
+    .option("-i, --id <id>", "id of task to delete", Number)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
     .action(handle);
@@ -138,7 +138,7 @@ program
     .alias('l')
     .description("displays a set of tasks (default: today's tasks)")
     .option('-f --from <time>', 'time from which to query (default: today 0:00 am)', parseTime, moment().startOf('day'))
-    .option('-t --to <time>', 'time from which to query (default: today 11:59 pm)', parseTime, moment().endOf('day'))
+    .option('-t --to <time>', 'time to which to query (default: today 11:59 pm)', parseTime, moment().endOf('day'))
     .option('-y --yesterday', "show yesterday's entries")
     .option('-w --week', 'show all entries of current week')
     .option('-m --month', 'show all entries of current month')
