@@ -55,6 +55,10 @@ function collectValues(val, aliases) {
     return aliases;
 }
 
+function collectNumbersList(val){
+    return val.split(',').map(Number);
+}
+
 function parseTime(dateTime) {
     var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY'], true);
     if (!time.isValid()) {
@@ -93,7 +97,7 @@ program
     .option("-t, --task <task>", "task description")
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
-    .option("-i, --id <id>", "id of task to edit", Number)
+    .option("-i, --id <id>[, id]", "id of task to edit", collectNumbersList)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .action(handle);
