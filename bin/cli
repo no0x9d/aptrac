@@ -54,7 +54,7 @@ function collectValues(val, aliases) {
     return aliases;
 }
 
-function collectNumbersList(val){
+function collectNumbersList(val) {
     return val.split(',').map(Number);
 }
 
@@ -96,7 +96,7 @@ program
     .option("-t, --task <task>", "task description")
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
-    .option("-i, --id <id>[, id]", "id of task to edit", collectNumbersList)
+    .option("-i, --id <id>[, id]", "id's of tasks to edit", collectNumbersList)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .action(handle);
