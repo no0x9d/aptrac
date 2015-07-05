@@ -2,17 +2,16 @@
 
 "use strict";
 
-var args          = require('./../lib/util/arguments'),
-    config        = require('./../lib/config/index'),
-    program       = require('commander'),
-    moment        = require('moment'),
-    path          = require('path'),
-    aptrac        = require('./../lib/aptrac');
+var config  = require('./../lib/config/index'),
+    program = require('commander'),
+    moment  = require('moment'),
+    path    = require('path'),
+    aptrac  = require('./../lib/aptrac');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
 
-function handle(task){
+function handle(task) {
     var options = this;
     if (!(options instanceof program.Command)) {
         console.log("There was a problem parsing the arguments. Please read the help with aptrac [command] -h");
