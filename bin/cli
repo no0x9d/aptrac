@@ -6,6 +6,7 @@ var config  = require('./../lib/config/index'),
     program = require('commander'),
     moment  = require('moment'),
     path    = require('path'),
+    output = require('./output/common-output'),
     aptrac  = require('./../lib/aptrac');
 require('sugar');
 require('moment-duration-format');
@@ -25,7 +26,7 @@ function handle(task) {
     var fn = aptrac[options._name];
 
     if (fn && Object.isFunction(fn))
-        fn.call(aptrac, options);
+        fn.call(aptrac, options, output);
     else {
         console.log('could not find command with name "%s" on the aptrac api', options._name)
     }

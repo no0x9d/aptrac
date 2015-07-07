@@ -1,16 +1,17 @@
 var chalk            = require('chalk'),
     columnify        = require('columnify'),
-    outputDateHeader = require('./outputDateHeader');
+    outputDateHeader = require('./../../lib/commands/common/outputDateHeader');
 
-module.exports = function doneOutput(err, args, tasks) {
+module.exports = function doneOutput(err, context, tasks) {
     if (err) console.log(chalk.red(err));
     else if (tasks && tasks.length > 0) {
         tasks.forEach(function (task) {
             outputTaskToConsole(task);
         })
     }
-    else if (args.task) {
-        outputTaskToConsole(args.task);
+    else if (context.task) {
+        console.log(context.task);
+        outputTaskToConsole(context.task);
     }
     else
         console.log("No task found");
