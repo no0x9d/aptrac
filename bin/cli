@@ -2,12 +2,13 @@
 
 "use strict";
 
-var config  = require('./../lib/config/index'),
-    program = require('commander'),
-    moment  = require('moment'),
-    path    = require('path'),
-    output = require('./output/common-output'),
-    aptrac  = require('./../lib/aptrac');
+var config        = require('./../lib/config/index'),
+    program       = require('commander'),
+    moment        = require('moment'),
+    path          = require('path'),
+    defaultOutput = require('./output/common-output'),
+    configOutput  = require('./output/config-output'),
+    aptrac        = require('./../lib/aptrac');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
@@ -23,10 +24,16 @@ function handle(task) {
     else if (task && Object.isArray(task))
         options.task = task.join(' ');
 
+    var o = {
+        _default: defaultOutput,
+        set: configOutput,
+        unset: configOutput
+    };
+
     var fn = aptrac[options._name];
 
     if (fn && Object.isFunction(fn))
-        fn.call(aptrac, options, output);
+        fn.call(aptrac, options, o[options._name] || o._default);
     else {
         console.log('could not find command with name "%s" on the aptrac api', options._name)
     }
