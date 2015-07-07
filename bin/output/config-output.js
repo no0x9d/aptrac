@@ -1,6 +1,9 @@
-module.exports = function outputConfigToConsole(config) {
+module.exports = function outputConfigToConsole(err, context) {
+    if (err) {
+        return console.log(err);
+    }
     var output = {};
-    config.sources.forEach(function (source) {
+    context.config.sources.forEach(function (source) {
         Object.merge(output, source, true);
     });
     console.log(output);

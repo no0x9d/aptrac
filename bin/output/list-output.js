@@ -11,7 +11,11 @@ function addOptionalFields(taskItem, fields, options) {
     });
 }
 
-module.exports = function groupAndOutputTasks(context, tasks) {
+module.exports = function groupAndOutputTasks(err, context, tasks) {
+    if(err){
+        return console.log(err);
+    }
+
     var options = context.options;
     var groupBy = 'day';
     if (options.groupWeek) {

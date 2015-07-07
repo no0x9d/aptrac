@@ -3,7 +3,9 @@ var chalk            = require('chalk'),
     outputDateHeader = require('./outputDateHeader');
 
 module.exports = function doneOutput(err, context, tasks) {
-    if (err) console.log(chalk.red(err));
+    if (err) {
+        return console.log(chalk.red(err));
+    }
     else if (tasks && tasks.length > 0) {
         tasks.forEach(function (task) {
             outputTaskToConsole(task);
