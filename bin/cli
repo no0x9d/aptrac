@@ -8,6 +8,7 @@ var config        = require('./../lib/config/index'),
     path          = require('path'),
     defaultOutput = require('./output/common-output'),
     configOutput  = require('./output/config-output'),
+    listOutput    = require('./output/list-output'),
     aptrac        = require('./../lib/aptrac');
 require('sugar');
 require('moment-duration-format');
@@ -26,6 +27,7 @@ function handle(task) {
 
     var o = {
         _default: defaultOutput,
+        list: listOutput,
         set: configOutput,
         unset: configOutput
     };

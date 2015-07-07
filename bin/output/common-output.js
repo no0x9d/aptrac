@@ -1,6 +1,6 @@
 var chalk            = require('chalk'),
     columnify        = require('columnify'),
-    outputDateHeader = require('./../../lib/commands/common/outputDateHeader');
+    outputDateHeader = require('./outputDateHeader');
 
 module.exports = function doneOutput(err, context, tasks) {
     if (err) console.log(chalk.red(err));
@@ -10,7 +10,6 @@ module.exports = function doneOutput(err, context, tasks) {
         })
     }
     else if (context.task) {
-        console.log(context.task);
         outputTaskToConsole(context.task);
     }
     else
