@@ -1,15 +1,10 @@
+var expect = require('chai').expect;
 var moment = require('moment');
-var chai = require('chai');
-var expect = chai.expect;
 var Datastore = require('nedb');
 
-chai.should();
+var aptrac = require('../../lib/aptrac');
 
 describe('end command', function () {
-
-
-    var aptrac = require('../../lib/aptrac');
-
     it('should end a current running task', function (done) {
 
         var db = new Datastore();

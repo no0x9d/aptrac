@@ -1,10 +1,8 @@
-var aptrac = require('../../lib/aptrac');
+var expect = require('chai').expect;
 var Datastore = require('nedb');
 var moment = require('moment');
-var chai = require('chai');
-var expect = chai.expect;
 
-chai.should();
+var aptrac = require('../../lib/aptrac');
 
 describe('start command', function () {
     it('should create a new entry in db', function (done) {
