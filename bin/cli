@@ -9,6 +9,7 @@ var config        = require('./../lib/config/index'),
     defaultOutput = require('./output/common-output'),
     configOutput  = require('./output/config-output'),
     listOutput    = require('./output/list-output'),
+    killOutput    = require('./output/kill-output'),
     aptrac        = require('./../lib/aptrac');
 require('sugar');
 require('moment-duration-format');
@@ -27,6 +28,7 @@ function handle(task) {
 
     var o = {
         _default: defaultOutput,
+        kill: killOutput,
         list: listOutput,
         set: configOutput,
         unset: configOutput
