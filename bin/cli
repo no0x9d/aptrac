@@ -71,7 +71,7 @@ function collectNumbersList(val) {
 }
 
 function parseTime(dateTime) {
-    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY'], true);
+    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY', 'DD.MM.YYYY'], true);
     if (!time.isValid()) {
         var date = Date.create(dateTime);
         if (!date.isValid()) {
@@ -148,12 +148,13 @@ program
     .command('list')
     .alias('l')
     .description("displays a set of tasks (default: today's tasks)")
-    .option('-f --from <time>', 'time from which to query (default: today 0:00 am)', parseTime, moment().startOf('day'))
-    .option('-t --to <time>', 'time to which to query (default: today 11:59 pm)', parseTime, moment().endOf('day'))
+    .option('-f --from <time>', 'time from which to query (default: today 0:00 am)', parseTime)
+    .option('-t --to <time>', 'time to which to query (default: today 11:59 pm)', parseTime)
     .option('-y --yesterday', "show yesterday's entries")
     .option('-w --week', 'show all entries of current week')
     .option('-m --month', 'show all entries of current month')
     .option('-a --all', 'show all entries')
+    .option('-S --search <query>', 'search for tasks containing the given query')
     .option('-C --condense', 'condense all entries with the same task into one')
     .option('-W --group-week', 'group the output per week (default: per day)')
     .option('-H --hide-empty', 'hide empty columns')
