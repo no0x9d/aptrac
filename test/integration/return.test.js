@@ -16,7 +16,7 @@ describe('return command', function () {
         })
     });
 
-    it.only('should start a new task with all properties from the last ended task', function (done) {
+    it('should start a new task with all properties from the last ended task', function (done) {
         var now = moment();
         var db = new Datastore();
 
