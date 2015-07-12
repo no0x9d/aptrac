@@ -5,7 +5,7 @@ var moment = require('moment');
 var aptrac = require('../../lib/aptrac');
 
 describe('kill command', function () {
-   it('should delete a task is id is a single vale', function (done) {
+   it('should delete a task is id is a single value', function (done) {
        var id = 123;
        var now = moment();
        var db = new Datastore();
@@ -30,5 +30,16 @@ describe('kill command', function () {
                done(err)
            })
        })
-   })
+   });
+
+    it('should throw an error if id is not a number', function (done) {
+        var options = {
+            id: "abcd"
+        };
+
+        aptrac.kill(options, function (err) {
+            expect(err).to.exist;
+            done()
+        })
+    })
 });
