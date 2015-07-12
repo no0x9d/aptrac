@@ -44,8 +44,8 @@ describe('return command', function () {
                 db: db
             };
 
-            aptrac.return(context, function(err, context, task){
-                if(err) done(err);
+            aptrac.return(context, function (err, context, task) {
+                if (err) done(err);
 
                 expect(now.isSame(task.start)).to.be.true;
                 expect(task.end).to.not.exist;
@@ -55,6 +55,65 @@ describe('return command', function () {
 
                 done(err)
             })
+        })
+    });
+
+    it('should start a new task with all properties from the with id specified task', function (done) {
+        var now = moment();
+        var db = new Datastore();
+
+        var endedTask = {
+            _id: 1,
+            start: moment().subtract(3, 'hours').toDate(),
+            end: moment().subtract(2, 'hours').toDate(),
+            task: "testing",
+            project: "aptrac",
+            note: "nothing"
+        };
+
+        var nextTast = {
+            _id: 2,
+            start: moment().subtract(1, 'hours').toDate(),
+            end: moment().toDate(),
+            task: "wrong",
+            project: "wrong",
+            note: "wrong"
+        };
+
+        db.insert(endedTask, function (err, task) {
+            if (err) done(err);
+
+            expect(task.start).to.equal(endedTask.start);
+            expect(task.end).to.equal(endedTask.end);
+
+            db.insert(nextTast, function(err, task){
+                if (err) done(err);
+
+                expect(task.start).to.equal(nextTast.start);
+                expect(task.end).to.equal(nextTast.end);
+
+                var context = {
+                    isContext: true,
+                    options: {
+                        id: 1,
+                        start: now,
+                        db: null
+                    },
+                    db: db
+                };
+
+                aptrac.return(context, function (err, context, task) {
+                    if (err) done(err);
+
+                    expect(now.isSame(task.start)).to.be.true;
+                    expect(task.end).to.not.exist;
+                    expect(task.task).to.equal(endedTask.task);
+                    expect(task.project).to.equal(endedTask.project);
+                    expect(task.note).to.equal(endedTask.note);
+
+                    done(err)
+                })
+            });
         })
     })
 });
