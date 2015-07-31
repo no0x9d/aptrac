@@ -3,7 +3,7 @@ var Datastore = require('nedb');
 
 var aptrac = require('../../lib/aptrac');
 
-describe('test command', function () {
+describe('edit command', function () {
 
     it('should edit a current running task', function (done) {
 

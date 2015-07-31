@@ -10,12 +10,14 @@ describe('end command', function () {
         var db = new Datastore();
         var start = new Date();
         var end = moment();
+        var project = "new project";
 
         var context = {
             isContext: true,
             db: db,
             options: {
                 end: end,
+                project: project,
                 db: null
             }
         };
@@ -26,9 +28,11 @@ describe('end command', function () {
             expect(newObj.start).to.eql(start);
 
             aptrac.end(context, function (err, context, task) {
+                if(err) return done(err);
                 expect(task.end.isSame(end)).to.be.true;
                 expect(task._id).to.equal(1);
                 expect(task.start.isSame(start)).to.be.true;
+                expect(task.project).equal(project);
                 done(err)
             })
         });
