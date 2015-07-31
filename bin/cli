@@ -71,7 +71,7 @@ function collectNumbersList(val) {
 }
 
 function parseTime(dateTime) {
-    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM', 'DD.MM.YY', 'DD.MM.YYYY'], true);
+    var time = moment(dateTime, ['HH:mm', 'DD.MM HH:mm', 'DD.MM.YY HH:mm', 'DD.MM.YYYY HH:mm', 'DD.MM.YYYY HH:mm', 'DD.MM', 'DD.MM.YY', 'DD.MM.YYYY'], true);
     if (!time.isValid()) {
         var date = Date.create(dateTime);
         if (!date.isValid()) {
