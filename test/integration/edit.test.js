@@ -1,3 +1,5 @@
+var moment = require('moment');
+
 var expect = require('chai').expect;
 var Datastore = require('nedb');
 
@@ -70,6 +72,46 @@ describe('edit command', function () {
                     expect(task.start.isSame(start)).to.be.true;
                     expect(task.project).to.equal(project);
                     done(err)
+                })
+            });
+
+        });
+
+    });
+
+    it('should throw an activity overlap error if changing start time create overlap', function (done) {
+
+        var db = new Datastore();
+        var startMoment = moment({year: 2010, month: 3, day: 5, hour: 15, minute: 10});
+        var startOne = startMoment.toDate();
+        var startTwo = startMoment.clone().hour(17).toDate();
+        var endTwo = startMoment.clone().hour(18).toDate();
+
+        var context = {
+            isContext: true,
+            db: db,
+            options: {
+                id: 2,
+                start: startMoment.clone().hour(16)
+            }
+        };
+
+        db.insert({_id: 1, start: startOne, end: startTwo}, function (err, newObj) {
+            if (err) done(err);
+
+            expect(newObj.start).to.eql(startOne);
+            expect(newObj.end).to.eql(startTwo);
+            expect(newObj._id).to.eql(1);
+
+            db.insert({_id: 2, start: startTwo, end: endTwo}, function (err, newObj) {
+                if (err) done(err);
+
+                expect(newObj.start).to.eql(startTwo);
+                expect(newObj._id).to.eql(2);
+
+                aptrac.edit(context, function (err, context, tasks) {
+                    expect(err).to.exist;
+                    done()
                 })
             });
 

@@ -74,7 +74,7 @@ describe('return command', function () {
         var nextTast = {
             _id: 2,
             start: moment().subtract(1, 'hours').toDate(),
-            end: moment().toDate(),
+            end: now.toDate(),
             task: "wrong",
             project: "wrong",
             note: "wrong"
