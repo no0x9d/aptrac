@@ -108,6 +108,7 @@ program
     .option("-t, --task <task>", "task description")
     .option("-n, --note <note>", "personal notes")
     .option("-p, --project <project>", "project for task")
+    .option("-U, --recursive-update", "recursive update tasks if possible")
     .option("-i, --id <id>[, id]", "id's of tasks to edit", collectNumbersList)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
