@@ -115,6 +115,19 @@ program
     .action(handle);
 
 program
+    .command('split [task...]')
+    .alias('sp')
+    .description('splits the given running task')
+    .option("-a, --at <time>", "splits at the given time", parseTime)
+    .option("-t, --task <task>", "task description")
+    .option("-n, --note <note>", "personal notes")
+    .option("-p, --project <project>", "project for task")
+    .option("-i, --id <id>[, id]", "id's of tasks to edit", collectNumbersList)
+    .option("-c, --config <config>", "name of configuration file", "config")
+    .option("--db <db>", "database connection")
+    .action(handle);
+
+program
     .command('end [task...]')
     .alias('en')
     .description('ends of the current running task')
