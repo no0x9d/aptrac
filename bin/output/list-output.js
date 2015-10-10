@@ -12,33 +12,98 @@ function addOptionalFields(taskItem, fields, options) {
 }
 
 module.exports = function groupAndOutputTasks(err, context, tasks) {
-    if(err){
+    if (err) {
         return console.log(err);
     }
 
     var options = context.options;
+    var groupedTasks = groupTasks(options, tasks);
+    if (options.accounting) {
+        displayTasksForAccounting(context, groupedTasks);
+    } else {
+
+        outputDays(context, groupedTasks)
+    }
+};
+
+function displayTasksForAccounting(context, groupedTasks) {
+    var options = context.options;
+
+    for (var group in groupedTasks) {
+        if (!groupedTasks.hasOwnProperty(group)) continue;
+
+        var tasksInGroup = groupedTasks[group];
+        var groupedByProject = tasksInGroup.groupBy(function (task) {
+            return task.project || '';
+        });
+
+        var outputTasks = [];
+        for (var project in groupedByProject) {
+            if (!groupedByProject.hasOwnProperty(project)) continue;
+            var condensedDuration = moment.duration(0);
+            groupedByProject[project].forEach(function (task) {
+                condensedDuration.add(task.duration);
+            });
+
+            outputTasks.push({project: project, duration: condensedDuration})
+        }
+
+        function formatOutputDurations(outputTasks) {
+            outputTasks.forEach(function (entry) {
+                sumDuration.add(entry.duration);
+                entry.duration = entry.duration.format('hh:mm', {trim: false})
+            });
+        }
+
+        if (outputTasks.length > 1){
+            var sumDuration = moment.duration(0);
+            formatOutputDurations(outputTasks);
+            outputTasks.push({duration: chalk.cyan(sumDuration.format('hh:mm', {trim: false}))});
+        } else{
+            formatOutputDurations(outputTasks);
+        }
+
+        console.log();
+        outputDateHeader(moment(new Date(group)), options);
+        console.log(columnify(outputTasks, {
+            showHeaders: false,
+            columnSplitter: '\t\t',
+            config: {
+                duration: {
+                    align: 'center'
+                }
+            }
+        }));
+    }
+}
+
+function groupTasks(options, tasks) {
     var groupBy = 'day';
     if (options.groupWeek) {
         groupBy = 'week'
     }
-
-    var groupedTasks = tasks.groupBy(function (task) {
+    if (options.groupMonth) {
+        groupBy = 'month'
+    }
+    if (options.groupYear) {
+        groupBy = 'year'
+    }
+    return tasks.groupBy(function (task) {
         var day = task.start.clone();
         return day.startOf(groupBy);
     });
+}
 
-    outputDays(context, groupedTasks)
-};
-
-function outputDays(context, groupedByDay) {
+function outputDays(context, groupedTasks) {
     var options = context.options;
-    for (var day in groupedByDay) {
+    for (var group in groupedTasks) {
+        if (!groupedTasks.hasOwnProperty(group)) continue;
+
         var duration = moment.duration(0);
-        var tasks = groupedByDay[day];
+        var tasks = groupedTasks[group];
 
         var outputTasks = [];
-        console.log();
-        outputDateHeader(moment(new Date(day)), options);
+
         if (options && options.condense) {
 
             var groupedbyTask = tasks.groupBy(function (task) {
@@ -48,6 +113,7 @@ function outputDays(context, groupedByDay) {
             });
 
             for (var groupedTask in groupedbyTask) {
+                if (!groupedbyTask.hasOwnProperty(groupedTask)) continue;
                 var condensedDuration = moment.duration(0);
                 groupedbyTask[groupedTask].forEach(function (task) {
                     condensedDuration.add(task.duration);
@@ -75,6 +141,8 @@ function outputDays(context, groupedByDay) {
                 outputTasks.push(taskItem);
             });
         }
+        console.log();
+        outputDateHeader(moment(new Date(group)), options);
         console.log(columnify(outputTasks, {
             columnSplitter: ' | ',
             config: {
