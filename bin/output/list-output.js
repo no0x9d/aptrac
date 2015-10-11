@@ -48,16 +48,16 @@ function displayTasksForAccounting(context, groupedTasks) {
             outputTasks.push({project: project, duration: condensedDuration})
         }
 
-        function formatOutputDurations(outputTasks) {
+        function formatOutputDurations(outputTasks, sumDuration) {
             outputTasks.forEach(function (entry) {
-                sumDuration.add(entry.duration);
+                sumDuration && sumDuration.add(entry.duration);
                 entry.duration = entry.duration.format('hh:mm', {trim: false})
             });
         }
 
         if (outputTasks.length > 1){
             var sumDuration = moment.duration(0);
-            formatOutputDurations(outputTasks);
+            formatOutputDurations(outputTasks, sumDuration);
             outputTasks.push({duration: chalk.cyan(sumDuration.format('hh:mm', {trim: false}))});
         } else{
             formatOutputDurations(outputTasks);
