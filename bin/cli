@@ -171,7 +171,7 @@ program
     .option("-i, --id <id>[, id]", "id's of tasks to edit", collectNumbersList)
     .option('-a --all', 'show all entries')
     .option('-S --search <query>', 'search for tasks containing the given query')
-    .option('-A --accounting', 'condense all entries with the same task into one')
+    .option('-A --accounting', 'show entries as accumulated list of time spend per project')
     .option('-C --condense', 'condense all entries with the same task into one')
     .option('-W --group-week', 'group the output per week (default: per day)')
     .option('-M --group-month', 'group the output per month (default: per day)')
