@@ -1,14 +1,14 @@
 var expect = require('chai').expect;
-var Datastore = require('nedb');
 var moment = require('moment');
 
-var aptrac = require('../../lib/aptrac');
+var Aptrac = require('../../lib/aptrac');
 
 describe('return command', function () {
     it('should not return if not ended task is present', function (done) {
         var options = {
             db: null
         };
+        var aptrac = new Aptrac(options);
         aptrac.return(options, function (err, context, task) {
             expect(task).to.not.exist;
             expect(err).to.exist;
@@ -18,7 +18,13 @@ describe('return command', function () {
 
     it('should start a new task with all properties from the last ended task', function (done) {
         var now = moment();
-        var db = new Datastore();
+
+        var options = {
+            start: now,
+            db: null
+        };
+        var aptrac = new Aptrac(options);
+        var db = aptrac.db;
 
         var endedTask = {
             _id: 1,
@@ -29,22 +35,14 @@ describe('return command', function () {
             note: "nothing"
         };
 
+
         db.insert(endedTask, function (err, task) {
             if (err) done(err);
 
             expect(task.start).to.equal(endedTask.start);
             expect(task.end).to.equal(endedTask.end);
 
-            var context = {
-                isContext: true,
-                options: {
-                    start: now,
-                    db: null
-                },
-                db: db
-            };
-
-            aptrac.return(context, function (err, context, task) {
+            aptrac.return(options, function (err, context, task) {
                 if (err) done(err);
 
                 expect(now.isSame(task.start)).to.be.true;
@@ -60,7 +58,13 @@ describe('return command', function () {
 
     it('should start a new task with all properties from the with id specified task', function (done) {
         var now = moment();
-        var db = new Datastore();
+        var options = {
+            id: 1,
+            start: now,
+            db: null
+        };
+        var aptrac = new Aptrac(options);
+        var db = aptrac.db;
 
         var endedTask = {
             _id: 1,
@@ -86,23 +90,13 @@ describe('return command', function () {
             expect(task.start).to.equal(endedTask.start);
             expect(task.end).to.equal(endedTask.end);
 
-            db.insert(nextTast, function(err, task){
+            db.insert(nextTast, function (err, task) {
                 if (err) done(err);
 
                 expect(task.start).to.equal(nextTast.start);
                 expect(task.end).to.equal(nextTast.end);
 
-                var context = {
-                    isContext: true,
-                    options: {
-                        id: 1,
-                        start: now,
-                        db: null
-                    },
-                    db: db
-                };
-
-                aptrac.return(context, function (err, context, task) {
+                aptrac.return(options, function (err, context, task) {
                     if (err) done(err);
 
                     expect(now.isSame(task.start)).to.be.true;

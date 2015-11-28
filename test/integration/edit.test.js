@@ -1,25 +1,22 @@
+var expect = require('chai').expect;
 var moment = require('moment');
 
-var expect = require('chai').expect;
-var Datastore = require('nedb');
-
-var aptrac = require('../../lib/aptrac');
+var Aptrac = require('../../lib/aptrac');
 
 describe('edit command', function () {
 
     it('should edit a current running task', function (done) {
 
-        var db = new Datastore();
+        var db;
         var start = new Date();
         var project = "Test Project";
 
-        var context = {
-            isContext: true,
-            db: db,
-            options: {
-                project: project
-            }
+        var options = {
+            project: project,
+            db: null
         };
+        var aptrac = new Aptrac(options);
+        db = aptrac.db;
 
         db.insert({_id: 1, start: start}, function (err, newObj) {
             if (err) done(err);
@@ -27,7 +24,7 @@ describe('edit command', function () {
             expect(newObj.start).to.eql(start);
             expect(newObj._id).to.eql(1);
 
-            aptrac.edit(context, function (err, context, tasks) {
+            aptrac.edit(options, function (err, context, tasks) {
                 var task = tasks[0];
                 expect(task._id).to.equal(1);
                 expect(task.start.isSame(start)).to.be.true;
@@ -40,18 +37,17 @@ describe('edit command', function () {
 
     it('should edit a specific task when id is given', function (done) {
 
-        var db = new Datastore();
+        var db;
         var start = new Date();
         var project = "Test Project";
-
-        var context = {
-            isContext: true,
-            db: db,
-            options: {
-                project: project,
-                id: 1
-            }
+        var options = {
+            project: project,
+            id: 1,
+            db: null
         };
+
+        var aptrac = new Aptrac(options);
+        db = aptrac.db;
 
         db.insert({_id: 1, start: start, end: start}, function (err, newObj) {
             if (err) done(err);
@@ -66,7 +62,7 @@ describe('edit command', function () {
                 expect(newObj.start).to.eql(start);
                 expect(newObj._id).to.eql(2);
 
-                aptrac.edit(context, function (err, context, tasks) {
+                aptrac.edit(options, function (err, context, tasks) {
                     var task = tasks[0];
                     expect(task._id).to.equal(1);
                     expect(task.start.isSame(start)).to.be.true;
@@ -81,20 +77,19 @@ describe('edit command', function () {
 
     it('should throw an activity overlap error if changing start time create overlap', function (done) {
 
-        var db = new Datastore();
+        var db;
         var startMoment = moment({year: 2010, month: 3, day: 5, hour: 15, minute: 10});
         var startOne = startMoment.toDate();
         var startTwo = startMoment.clone().hour(17).toDate();
         var endTwo = startMoment.clone().hour(18).toDate();
-
-        var context = {
-            isContext: true,
-            db: db,
-            options: {
-                id: 2,
-                start: startMoment.clone().hour(16)
-            }
+        var options = {
+            id: 2,
+            start: startMoment.clone().hour(16),
+            db: null
         };
+
+        var aptrac = new Aptrac(options);
+        db = aptrac.db;
 
         db.insert({_id: 1, start: startOne, end: startTwo}, function (err, newObj) {
             if (err) done(err);
@@ -109,7 +104,7 @@ describe('edit command', function () {
                 expect(newObj.start).to.eql(startTwo);
                 expect(newObj._id).to.eql(2);
 
-                aptrac.edit(context, function (err, context, tasks) {
+                aptrac.edit(options, function (err, context, tasks) {
                     expect(err).to.exist;
                     done()
                 })
@@ -120,13 +115,14 @@ describe('edit command', function () {
     });
 
     it('should return error if no task is running', function (done) {
-        var options = {
-            db: null
-        };
+        var options = {db: null};
+        var aptrac = new Aptrac(options);
+
         aptrac.edit(options, function (err, context, task) {
             expect(err).to.not.equal.null;
             expect(task).to.equal.null;
             done()
         })
     })
-});
+})
+;

@@ -2,15 +2,13 @@
 
 "use strict";
 
-var config        = require('./../lib/config/index'),
-    program       = require('commander'),
+var program       = require('commander'),
     moment        = require('moment'),
-    path          = require('path'),
     defaultOutput = require('./output/common-output'),
     configOutput  = require('./output/config-output'),
     listOutput    = require('./output/list-output'),
     killOutput    = require('./output/kill-output'),
-    aptrac        = require('./../lib/aptrac');
+    Aptrac        = require('./../lib/aptrac');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
@@ -34,6 +32,7 @@ function handle(task) {
         unset: configOutput
     };
 
+    var aptrac = new Aptrac(options);
     var fn = aptrac[options._name];
 
     if (fn && Object.isFunction(fn))
@@ -48,16 +47,6 @@ function collectKeyValues(val, aliases) {
     var keyvalue = val.split("=");
     aliases[keyvalue[0]] = keyvalue[1];
     return aliases;
-}
-
-function makeDBPathAbsolute(pathToDB) {
-    if (pathToDB.startsWith("$home")) {
-        pathToDB = path.join(config.get('home'), pathToDB.slice(5))
-    }
-    else if (pathToDB.startsWith("~")) {
-        pathToDB = path.join(config.get('userhome'), pathToDB.slice(1))
-    }
-    return path.resolve(pathToDB);
 }
 
 function collectValues(val, aliases) {
@@ -197,7 +186,7 @@ program
     .option("-t, --task <task>", "task description")
     .option("-p, --project <project>", "project for task")
     .option("-w, --work-hours <work>", "work hours per day", Number)
-    .option("--db <db>", "database connection", makeDBPathAbsolute)
+    .option("--db <db>", "database connection")
     .option("-a, --alias <key>=<value>", "sets a alias for a arbitrary field", collectKeyValues, {})
     .option("-c, --config <config>", "name of configuration file", "config")
     .action(handle);

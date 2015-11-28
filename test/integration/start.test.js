@@ -1,8 +1,7 @@
 var expect = require('chai').expect;
-var Datastore = require('nedb');
 var moment = require('moment');
 
-var aptrac = require('../../lib/aptrac');
+var Aptrac = require('../../lib/aptrac');
 
 describe('start command', function () {
     it('should create a new entry in db', function (done) {
@@ -14,6 +13,7 @@ describe('start command', function () {
             start: now,
             task: name
         };
+        var aptrac = new Aptrac(options);
 
         aptrac.start(options, function (err, context, task) {
             expect(err).to.be.null;
@@ -25,6 +25,7 @@ describe('start command', function () {
     });
 
     it('should should throw if no start date is provided', function (done) {
+        var aptrac = new Aptrac();
         var options = {
             db: null,
             start: undefined,
@@ -42,17 +43,13 @@ describe('start command', function () {
         var oldStart = moment().subtract(1, 'hour');
         var name = 'mocha test';
 
-        var db = new Datastore();
-
-        var context = {
-            isContext: true,
-            db: db,
-            options: {
-                db: null,
-                start: now,
-                task: name
-            }
+        var options = {
+            db: null,
+            start: now,
+            task: name
         };
+        var aptrac = new Aptrac(options);
+        var db = aptrac.db;
 
         var id = 1;
         db.insert({_id: id, start: oldStart}, function (err, newObj) {
@@ -61,7 +58,7 @@ describe('start command', function () {
             expect(newObj.start).to.eql(oldStart);
             expect(newObj.end).to.be.undefined;
 
-            aptrac.start(context, function (err, context, newTask) {
+            aptrac.start(options, function (err, context, newTask) {
                 if (err) done(err);
 
                 db.findOne({_id: id}, function (err, task) {
