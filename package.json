@@ -1,7 +1,7 @@
 {
   "name": "aptrac",
-  "version": "1.0.0",
-  "description": "a worktime tracker with special fields for adesso aproda time tracking",
+  "version": "0.9.0",
+  "description": "a worktime tracker for your cli, using the customizable aptrac-core library",
   "main": "./lib/aptrac.js",
   "scripts": {
     "test": "mocha --recursive",
@@ -15,28 +15,18 @@
     "time tracker",
     "timetracker",
     "timetrap",
-    "work tracker",
-    "aproda",
-    "adesso"
+    "work tracker"
   ],
   "author": "Christoph Hoffmann <choffmann@nestedloop.de",
   "license": "MIT",
   "dependencies": {
-    "async": "^1.2.1",
+    "aptrac-core": "no0x9d/aptrac-core",
     "chalk": "^1.0.0",
     "columnify": "^1.5.1",
     "commander": "^2.8.1",
-    "jsonfile": "^2.1.2",
     "moment": "^2.10.3",
     "moment-duration-format": "^1.3.0",
-    "nedb": "^1.1.2",
-    "osenv": "^0.1.2",
     "sugar": "^1.4.1"
-  },
-  "devDependencies": {
-    "chai": "^3.0.0",
-    "mocha": "^2.2.5",
-    "istanbul": "^0.3.17"
   },
   "repository": {
     "type": "git",

@@ -4,11 +4,11 @@
 
 var program       = require('commander'),
     moment        = require('moment'),
-    defaultOutput = require('./output/common-output'),
-    configOutput  = require('./output/config-output'),
-    listOutput    = require('./output/list-output'),
-    killOutput    = require('./output/kill-output'),
-    Aptrac        = require('./../lib/aptrac');
+    defaultOutput = require('../lib/output/common-output'),
+    configOutput  = require('../lib/output/config-output'),
+    listOutput    = require('../lib/output/list-output'),
+    killOutput    = require('../lib/output/kill-output'),
+    Aptrac        = require('aptrac-core');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');

@@ -34,7 +34,7 @@ Installing aptrac adds the application as `aptrac` and `a` to your path.
 For detailed usage consult the application help with `aptrac -h` or `aptrac [command] -h`
 
 ### commands
-> Nearly all commands and options can be abbreviated to one or two letters. 
+> Nearly all commands and options can be abbreviated to one or two letters.
 > The only exceptions are the `set` and `unset` commands and the `--db` option.
 > For more clarity this documentation uses the full versions for both commands and options.
 
@@ -42,6 +42,7 @@ For detailed usage consult the application help with `aptrac -h` or `aptrac [com
 * **edit (ed)** edits the current running task
 * **end (en)** ends the current running task
 * **return (r)** starts a new task with the values from the last ended task
+* **split (sp)** splits a task in two at a given time.
 * **list (l)** displays a set of tasks (default: today's tasks)
 * **now (n)** displays the current running task
 * **kill (k)** deletes a task
@@ -105,7 +106,7 @@ To minimize the input I have to do, I first I set the default project to "ACME C
 $ aptrac set --project "ACME Corp." --alias S=SomeBigCompany
 ```
 
-If I now start a task with 
+If I now start a task with
 
 ```sh
 $ aptrac start "doing somthing important"
@@ -113,9 +114,9 @@ Thursday, 25.06.2015
 ID | START | END   | DURATION | PROJECT    | TASK                      | NOTE
 1  | 09:29 |       |  00:00   | ACME Corp. | doing somthing important  |
 
-``` 
+```
 
-It's project is automatically set to "ACME Corp.". To start a task for "SomeBigCompany" I can use 
+It's project is automatically set to "ACME Corp.". To start a task for "SomeBigCompany" I can use
 
 ```sh
 $ aptrac start --project S "equally important"
