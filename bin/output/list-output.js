@@ -128,6 +128,7 @@ function outputDays(context, groupedTasks) {
             }
         }
         else {
+            var lastEnd;
             tasks.forEach(function (task) {
                 duration.add(task.duration);
                 var taskItem = {
@@ -137,6 +138,10 @@ function outputDays(context, groupedTasks) {
                     duration: task.duration.format('hh:mm', {trim: false})
                 };
                 addOptionalFields(taskItem, task, options);
+                if(lastEnd && task.start.diff(lastEnd, 'minutes') > 1 && task.start.isSame(lastEnd, 'day')){
+                    outputTasks.push({});
+                }
+                lastEnd = task.end;
 
                 outputTasks.push(taskItem);
             });
