@@ -139,7 +139,7 @@ function outputDays(context, groupedTasks) {
                 };
                 addOptionalFields(taskItem, task, options);
                 if(lastEnd && task.start.diff(lastEnd, 'minutes') > 1 && task.start.isSame(lastEnd, 'day')){
-                    outputTasks.push({});
+                    outputTasks.push({duration: moment.duration(task.start.diff(lastEnd)).format('HH:mm', {trim: false}) });
                 }
                 lastEnd = task.end;
 
