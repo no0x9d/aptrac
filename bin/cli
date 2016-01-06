@@ -3,6 +3,7 @@
 "use strict";
 
 var program       = require('commander'),
+    fs            = require('fs'),
     moment        = require('moment'),
     defaultOutput = require('../lib/output/common-output'),
     configOutput  = require('../lib/output/config-output'),
@@ -202,5 +203,32 @@ program
     .option("-a, --alias <alias>", "database connection", collectValues, [])
     .option("-c, --config <config>", "name of configuration file", "config")
     .action(handle);
+
+program
+    .command("completion")
+    .description("bash completion script")
+    .option("--cmd", "print a list of all commands")
+    .option("--op <command>", "print a list of all options for a command")
+    .action(function (options) {
+        if (options && options.cmd) {
+            options.parent.commands.forEach(function (command) {
+                console.log(command._name);
+            });
+            console.log("cmd");
+        } else if (options && options.op) {
+            var filteredCommands = options.parent.commands.filter(function (command) {
+                return command._name === options.op;
+            });
+            filteredCommands.forEach(function (command) {
+                command.options.forEach(function (option) {
+                    console.log(option.long);
+                });
+            });
+        } else {
+            var fileName = require.resolve('../util/bash-completion.sh');
+            var completionScript = fs.readFileSync(fileName, 'utf8');
+            console.log(completionScript);
+        }
+    });
 
 program.parse(process.argv);
