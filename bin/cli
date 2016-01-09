@@ -211,18 +211,20 @@ program
     .option("--op <command>", "print a list of all options for a command")
     .action(function (options) {
         if (options && options.cmd) {
-            options.parent.commands.forEach(function (command) {
-                console.log(command._name);
+            var cmds = options.parent.commands.map(function (command) {
+                return command._name;
             });
-            console.log("cmd");
+            console.log(cmds.join(' '));
         } else if (options && options.op) {
             var filteredCommands = options.parent.commands.filter(function (command) {
                 return command._name === options.op;
             });
+            var opts = [];
             filteredCommands.forEach(function (command) {
                 command.options.forEach(function (option) {
-                    console.log(option.long);
+                    opts.add(option.long);
                 });
+                console.log(opts.join(' '));
             });
         } else {
             var fileName = require.resolve('../util/bash-completion.sh');
