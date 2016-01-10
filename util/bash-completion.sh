@@ -1,3 +1,10 @@
+###-begin-aptrac-completion-###
+#
+# aptrac command completion script
+#
+# Installation: aptrac completion >> ~/.bashrc
+# Or: aptrac completion > /usr/local/etc/bash_completion.d/npm
+#
 _aptrac()
 {
     local cur cmd cmds opts
@@ -17,3 +24,4 @@ _aptrac()
     return 0
 }
 complete -F _aptrac aptrac
+###-end-aptrac-completion-###
