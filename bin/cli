@@ -9,7 +9,8 @@ var program       = require('commander'),
     configOutput  = require('../lib/output/config-output'),
     listOutput    = require('../lib/output/list-output'),
     killOutput    = require('../lib/output/kill-output'),
-    Aptrac        = require('aptrac-core');
+    Aptrac        = require('aptrac-core'),
+    packagejson   = require('../package.json');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
@@ -74,7 +75,7 @@ function parseTime(dateTime) {
 }
 
 program
-    .version('0.9.0')
+    .version(packagejson.version)
     .description("See help for individual commands with: aptrac <command> --help");
 
 program
