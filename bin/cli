@@ -11,7 +11,8 @@ var program       = require('commander'),
     killOutput    = require('../lib/output/kill-output'),
     schema        = require('../lib/schema/schema'),
     Aptrac        = require('aptrac-core'),
-    packagejson   = require('../package.json');
+    packagejson   = require('../package.json'),
+    util          = require('util');
 require('sugar');
 require('moment-duration-format');
 require('../lib/util/moment-duration-clone');
@@ -45,6 +46,42 @@ function handle(task) {
     }
 }
 
+function createOptionFlags(field, fieldName) {
+    var flags = "";
+    if (field.alias) {
+        flags += util.format("-%s, ", field.alias)
+    }
+    flags += util.format("--%s", fieldName);
+
+    if (field.type !== Boolean) {
+        var se = field.optional ? ["[", "]"] : ["<", ">"];
+        flags+= util.format(" %s%s%s", se[0], fieldName, se[1]);
+    }
+    return flags;
+}
+
+var determineCoercionFunction = function (field) {
+    if (field.type == Date){
+        return parseTime;
+    }else {
+        return undefined;
+    }
+};
+
+function addDynamicTaskProperties() {
+    var command = this;
+    for (var fieldName in schema) {
+        if (schema.hasOwnProperty(fieldName)) {
+            var field = schema[fieldName];
+
+            var flags = createOptionFlags(field, fieldName);
+            var coerceFn = determineCoercionFunction(field);
+            command.option(flags, field.description, coerceFn);
+        }
+    }
+    return command;
+}
+
 function collectKeyValues(val, aliases) {
     aliases = aliases || {};
     var keyvalue = val.split("=");
@@ -74,6 +111,7 @@ function parseTime(dateTime) {
     }
     return time;
 }
+program.Command.prototype.addDynamicTaskProperties = addDynamicTaskProperties;
 
 program
     .version(packagejson.version)
@@ -84,9 +122,7 @@ program
     .alias('s')
     .description('starts a new task')
     .option("-s, --start <time>", "sets the start time (default: now)", parseTime, moment())
-    .option("-n, --note <note>", "personal notes")
-    .option("-t, --task <task>", "task description")
-    .option("-p, --project <project>", "project for task")
+    .addDynamicTaskProperties()
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .action(handle);
@@ -97,9 +133,7 @@ program
     .description('edits the current running task')
     .option("-s, --start <time>", "sets the start time", parseTime)
     .option("-e, --end <time>", "sets the end time", parseTime)
-    .option("-t, --task <task>", "task description")
-    .option("-n, --note <note>", "personal notes")
-    .option("-p, --project <project>", "project for task")
+    .addDynamicTaskProperties()
     .option("-U, --recursive-update", "recursive update tasks if possible")
     .option("-i, --id <id>[, id]", "id's of tasks to edit", collectNumbersList)
     .option("-c, --config <config>", "name of configuration file", "config")
@@ -111,9 +145,7 @@ program
     .alias('sp')
     .description('splits the given running task')
     .option("-a, --at <time>", "splits at the given time", parseTime)
-    .option("-t, --task <task>", "task description")
-    .option("-n, --note <note>", "personal notes")
-    .option("-p, --project <project>", "project for task")
+    .addDynamicTaskProperties()
     .option("-i, --id <id>[, id]", "id's of tasks to edit", collectNumbersList)
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
@@ -125,9 +157,7 @@ program
     .description('ends of the current running task')
     .option('-s, --start <time>', "sets the start time", parseTime)
     .option('-e, --end <time>', "sets the end time (default: now)", parseTime, moment())
-    .option("-t, --task <task>", "task description")
-    .option('-n, --note <note>', 'personal notes')
-    .option('-p, --project <project>', 'project for task')
+    .addDynamicTaskProperties()
     .option("-c, --config <config>", "name of configuration file", "config")
     .option('--db <db>', 'database connection')
     .action(handle);
@@ -211,7 +241,7 @@ program
     .description("bash completion script")
     .option("--cmd", "print a list of all commands")
     .option("--op <command>", "print a list of all options for a command")
-    .action(function (options) {
+    .action(function completion(options) {
         if (options && options.cmd) {
             var cmds = options.parent.commands.map(function (command) {
                 return command._name;
