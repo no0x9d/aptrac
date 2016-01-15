@@ -9,6 +9,7 @@ var program       = require('commander'),
     configOutput  = require('../lib/output/config-output'),
     listOutput    = require('../lib/output/list-output'),
     killOutput    = require('../lib/output/kill-output'),
+    schema        = require('../lib/schema/schema'),
     Aptrac        = require('aptrac-core'),
     packagejson   = require('../package.json');
 require('sugar');
@@ -34,7 +35,7 @@ function handle(task) {
         unset: configOutput
     };
 
-    var aptrac = new Aptrac(options);
+    var aptrac = new Aptrac(options, schema);
     var fn = aptrac[options._name];
 
     if (fn && Object.isFunction(fn))
