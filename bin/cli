@@ -95,6 +95,7 @@ program
     .option("-n, --note <note>", "personal notes")
     .option("-t, --task <task>", "task description")
     .option("-p, --project <project>", "project for task")
+    .option("-U, --recursive-update", "recursive update tasks if possible")
     .option("-c, --config <config>", "name of configuration file", "config")
     .option("--db <db>", "database connection")
     .action(handle);
