@@ -19,9 +19,10 @@ module.exports = function groupAndOutputTasks(err, context, tasks) {
     var options = context.options;
     var groupedTasks = groupTasks(options, tasks);
     if (options.accounting) {
-        displayTasksForAccounting(context, groupedTasks);
+      displayTasksForAccounting(context, groupedTasks);
+    }else if (options.tableWeek) {
+        outputTasks(context, groupedTasks);
     } else {
-
         outputDays(context, groupedTasks)
     }
 };
@@ -166,4 +167,64 @@ function outputDays(context, groupedTasks) {
             console.log("duration [h]: %s", duration.format("HH:mm", {trim: false}))
         }
     }
+}
+
+function outputTasks(context, groupedTasks) {
+    var options = context.options;
+    var tasksMap = {};
+    for (var group in groupedTasks) {
+        if (!groupedTasks.hasOwnProperty(group)) continue;
+
+        var duration = moment.duration(0);
+        var tasks = groupedTasks[group];
+
+        var outputTasks = [];
+
+
+        var groupedbyTask = tasks.groupBy(function (task) {
+            return (task.task || '')
+              + (task.project || '')
+              + (task.note || '');
+        });
+
+        for (var groupedTask in groupedbyTask) {
+            if (!groupedbyTask.hasOwnProperty(groupedTask)) continue;
+            var condensedDuration = moment.duration(0);
+            groupedbyTask[groupedTask].forEach(function (task) {
+                condensedDuration.add(task.duration);
+                duration.add(task.duration);
+            });
+            var groupedTaskRepresentant = groupedbyTask[groupedTask][0];
+            var taskItem = {
+                duration: condensedDuration.format('hh:mm', {trim: false})
+            };
+            addOptionalFields(taskItem, groupedTaskRepresentant, options);
+            outputTasks.push(taskItem);
+            tasksMap[taskItem.task] = tasksMap[taskItem.task] || [];
+            tasksMap[taskItem.task].add({
+                day: groupedTaskRepresentant.start.format('dd'),
+                duration: taskItem.duration
+            });
+        }
+
+    }
+    var outputTaskArray = [];
+    for (var t in tasksMap) {
+        if (!tasksMap.hasOwnProperty(t)) continue;
+        var task = {task: t};
+        tasksMap[t].forEach((day) =>{
+            task[day.day] = day.duration
+        });
+        outputTaskArray.push(task)
+    }
+    console.log();
+    outputDateHeader(moment(new Date(group)), options);
+    console.log(columnify(outputTaskArray, {
+        columnSplitter: ' | ',
+        config: {
+            duration: {
+                align: 'center'
+            }
+        }
+    }));
 }

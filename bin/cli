@@ -173,6 +173,7 @@ program
     .option('-a --all', 'show all entries')
     .option('-S --search <query>', 'search for tasks containing the given query')
     .option('-A --accounting', 'show entries as accumulated list of time spend per project')
+    .option('-u --table-week', 'shows entries as row in a table condensed with each week day (usage with -w)')
     .option('-C --condense', 'condense all entries with the same task into one')
     .option('-W --group-week', 'group the output per week (default: per day)')
     .option('-M --group-month', 'group the output per month (default: per day)')
