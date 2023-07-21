@@ -165,6 +165,7 @@ program
     .description("displays a set of tasks (default: today's tasks)")
     .option('-f --from <time>', 'time from which to query (default: today 0:00 am)', parseTime)
     .option('-t --to <time>', 'time to which to query (default: today 11:59 pm)', parseTime)
+    .option('-d --date <time>', 'show tasks at this date', parseTime)
     .option('-w --week', 'show all entries of current week. is partially overwritten by -f and -t')
     .option('-m --month', 'show all entries of current month. is partially overwritten by -f and -t')
     .option('-y --year', 'show all entries of current year. is partially overwritten by -f and -t')
