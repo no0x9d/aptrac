@@ -17,6 +17,12 @@ module.exports = function groupAndOutputTasks(err, context, tasks) {
     }
 
     var options = context.options;
+
+    if(options.raw) {
+        console.log(JSON.stringify(tasks, null, 2));
+        return;
+    }
+
     var groupedTasks = groupTasks(options, tasks);
     if (options.accounting) {
       displayTasksForAccounting(context, groupedTasks);
