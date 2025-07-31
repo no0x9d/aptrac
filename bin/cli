@@ -170,6 +170,7 @@ program
     .option('-m --month', 'show all entries of current month. is partially overwritten by -f and -t')
     .option('-y --year', 'show all entries of current year. is partially overwritten by -f and -t')
     .option('-l --last', "shows the last unit of the chosen time frame, e.g. -lw for last week. use together with -w -m -y or without -f or -t to get day.")
+    .option('--cw <cw>', 'calendar week to list entries', Number)
     .option("-i, --id <id>[, id]", "id's of tasks to list", collectNumbersList)
     .option('-a --all', 'show all entries')
     .option('-S --search <query>', 'search for tasks containing the given query')
